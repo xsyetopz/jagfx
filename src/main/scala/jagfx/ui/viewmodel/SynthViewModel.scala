@@ -3,6 +3,7 @@ package jagfx.ui.viewmodel
 import javafx.beans.property._
 import javafx.collections.{FXCollections, ObservableList}
 import jagfx.model._
+import jagfx.Constants
 
 enum RackMode:
   case Main, Filter, Both
@@ -22,7 +23,11 @@ class SynthViewModel:
   // TGT: false = TONE, true = ALL
   private val targetMode = new SimpleBooleanProperty(false)
 
-  for _ <- 0 until 10 do tones.add(new ToneViewModel())
+  private val currentFilePath = new SimpleStringProperty("Untitled.synth")
+  def currentFilePathProperty: StringProperty = currentFilePath
+  def setCurrentFilePath(path: String): Unit = currentFilePath.set(path)
+
+  for _ <- 0 until Constants.MaxTones do tones.add(new ToneViewModel())
 
   def activeToneIndexProperty: IntegerProperty = activeToneIndex
   def getActiveToneIndex: Int = activeToneIndex.get
@@ -41,12 +46,26 @@ class SynthViewModel:
   def targetModeProperty: BooleanProperty = targetMode
   def isTargetAll: Boolean = targetMode.get
 
+  // max of `tone.duration + tone.start` across all active tones
+  private val totalDuration = new SimpleIntegerProperty(0)
+
+  def totalDurationProperty: IntegerProperty = totalDuration
+
   def load(file: SynthFile): Unit =
+    import Constants._
     loopStart.set(file.loop.begin)
     loopEnd.set(file.loop.end)
-    for i <- 0 until 10 do
+    for i <- 0 until MaxTones do
       val tone = file.tones.lift(i).flatten
       tones.get(i).load(tone)
+
+    // total duration from active tones
+    val maxDur = (0 until MaxTones)
+      .flatMap(i => file.tones.lift(i).flatten)
+      .map(t => t.duration + t.start)
+      .maxOption
+      .getOrElse(0)
+    totalDuration.set(maxDur)
 
   def toModel(): SynthFile =
     val toneModels = tones
