@@ -186,7 +186,7 @@ class HeaderController(viewModel: SynthViewModel):
       val path = file.toPath
       if path.toString.endsWith(".wav") then
         val audio = TrackSynthesizer.synthesize(viewModel.toModel(), 1)
-        val wav = WavWriter.write(audio.toBytes)
+        val wav = WavWriter.write(audio.toBytesUnsigned)
         Files.write(path, wav)
       else
         val bytes = SynthWriter.write(viewModel.toModel())
@@ -196,15 +196,20 @@ class HeaderController(viewModel: SynthViewModel):
   private def playAudio(): Unit =
     stopAudio()
 
-    val targetIndex =
-      if viewModel.isTargetAll then 0 else viewModel.getActiveToneIndex + 1
-    val audio = TrackSynthesizer.synthesize(viewModel.toModel(), targetIndex)
+    val toneFilter =
+      if viewModel.isTargetAll then -1 else viewModel.getActiveToneIndex
+    val loopCount =
+      if viewModel.isLoopEnabled then viewModel.loopCountProperty.get else 1
+    val audio =
+      TrackSynthesizer.synthesize(viewModel.toModel(), loopCount, toneFilter)
 
     val clip = AudioSystem.getClip()
     currentClip = Some(clip)
 
-    val format = new AudioFormat(Constants.SampleRate, 8, 1, true, true)
-    clip.open(format, audio.toBytes, 0, audio.length)
+    val format = new AudioFormat(Constants.SampleRate, 16, 1, true, true)
+    val audioBytes = audio.toBytes16BE
+
+    clip.open(format, audioBytes, 0, audioBytes.length)
 
     if viewModel.isLoopEnabled then
       val startMs = math.max(0, viewModel.loopStartProperty.get)
