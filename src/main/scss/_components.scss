@@ -1,0 +1,132 @@
+@use "variables" as *;
+
+.root {
+    -fx-base: #101010;
+    -fx-background-color: $bg-root;
+    -fx-font-family: "Consolas", "Monaco", "Courier New", monospace;
+    -fx-font-size: 10px;
+    -fx-text-fill: $text-main;
+}
+
+// Components
+
+.jag-btn {
+    -fx-background-color: $bg-btn;
+    -fx-border-color: $border-dim;
+    -fx-text-fill: $text-btn;
+    -fx-background-radius: 2px;
+    -fx-padding: 0 4px;
+    -fx-cursor: hand;
+    -fx-alignment: center;
+    -fx-min-height: 18px;
+    -fx-max-height: 18px;
+    -fx-min-width: 16px;
+
+    &:hover {
+        -fx-text-fill: $text-main;
+        -fx-background-color: $bg-btn-hover;
+    }
+
+    &.active {
+        -fx-background-color: #222;
+        -fx-text-fill: $text-accent;
+        -fx-border-color: $border-accent;
+    }
+
+    .ikonli-font-icon {
+        -fx-icon-color: -fx-text-fill;
+        -fx-fill: -fx-text-fill;
+    }
+}
+
+.jag-input {
+    -fx-background-color: $bg-input;
+    -fx-border-color: $border-dim;
+    -fx-text-fill: $text-main;
+    -fx-background-radius: 2px;
+    -fx-alignment: center-right;
+    -fx-padding: 0 4px;
+    -fx-min-width: 24px;
+    -fx-min-height: 18px;
+    -fx-max-height: 18px;
+
+    &:focused {
+        -fx-border-color: $border-accent;
+    }
+}
+
+.bar-box {
+    -fx-background-color: $bg-root;
+    -fx-border-color: $border-dim;
+    -fx-border-radius: 1px;
+    -fx-cursor: h_resize;
+}
+
+.bar-fill {
+    -fx-background-color: $bg-fill;
+}
+
+.jag-cell {
+    -fx-background-color: $bg-cell;
+    -fx-border-color: #333;
+    -fx-border-width: 1px;
+
+    &:disabled {
+        -fx-opacity: 0.4;
+    }
+
+    &.selected {
+        -fx-border-color: $border-accent;
+        -fx-background-color: $bg-cell-sel;
+
+        .cell-title {
+            -fx-text-fill: $text-main;
+        }
+    }
+
+    &.muted {
+        -fx-opacity: 0.5;
+    }
+
+    &.collapsed {
+        -fx-pref-height: 22px;
+        -fx-max-height: 22px;
+    }
+}
+
+.cell-head {
+    -fx-background-color: rgba(0, 0, 0, 0.5);
+    -fx-padding: 2px 4px;
+    -fx-alignment: center-left;
+}
+
+.cell-title {
+    -fx-text-fill: $text-dim;
+    -fx-font-weight: bold;
+    -fx-font-size: 9px;
+}
+
+.t-btn {
+    -fx-font-size: 9px;
+    -fx-padding: 0 4px;
+    -fx-background-color: $bg-btn;
+    -fx-text-fill: #666;
+    -fx-border-color: $bg-root;
+
+    &:hover {
+        -fx-text-fill: $text-main;
+    }
+}
+
+.h-strip {
+    -fx-spacing: 2px;
+    -fx-alignment: top-center;
+    -fx-padding: 2px;
+    -fx-border-color: transparent $border-dim transparent transparent;
+}
+
+.h-head {
+    -fx-font-size: 9px;
+    -fx-font-weight: bold;
+    -fx-text-fill: $text-dim;
+}

@@ -1,0 +1,93 @@
+@use "variables" as *;
+
+// Structural Layout
+
+// Layout Sections
+.header {
+    -fx-background-color: $bg-header;
+    -fx-border-color: transparent transparent $border-dim transparent;
+    -fx-padding: 0 4px;
+    -fx-pref-height: 36px;
+    -fx-alignment: center-left;
+}
+
+.h-grp {
+    -fx-alignment: center-left;
+    -fx-padding: 0 4px 0 0;
+    -fx-border-color: transparent $border-dim transparent transparent;
+}
+
+.inspector {
+    -fx-background-color: $bg-panel;
+    -fx-border-color: transparent $border-dim transparent transparent;
+    -fx-padding: 8px;
+    -fx-pref-width: 160px;
+}
+
+.rack {
+    -fx-background-color: $bg-root;
+    -fx-padding: 1px;
+}
+
+.footer {
+    -fx-background-color: $bg-footer;
+    -fx-border-color: $border-dim transparent transparent transparent;
+    -fx-pref-height: 150px;
+}
+
+.panel {
+    -fx-border-color: transparent $border-dim transparent transparent;
+}
+
+.panel-head {
+    -fx-background-color: $bg-btn;
+    -fx-text-fill: $text-head;
+    -fx-font-weight: bold;
+    -fx-padding: 4px 6px;
+    -fx-border-color: transparent transparent $border-dim transparent;
+}
+
+// Footer Panel Components
+
+.h-strip {
+    -fx-spacing: 2px;
+    -fx-alignment: top-center;
+    -fx-padding: 2px;
+    -fx-border-color: $border-dim;
+    -fx-background-color: $bg-header;
+    -fx-border-radius: 2px;
+    -fx-background-radius: 2px;
+    -fx-min-width: 50px;
+    -fx-pref-width: 50px;
+}
+
+.h-head {
+    -fx-font-size: 9px;
+    -fx-font-weight: bold;
+    -fx-text-fill: $text-head;
+    -fx-border-color: transparent transparent $border-dim transparent;
+}
+
+.h-sub-row {
+    -fx-alignment: center-left;
+    -fx-spacing: 2px;
+}
+
+.h-lbl {
+    -fx-font-size: 9px;
+    -fx-text-fill: #555;
+    -fx-font-weight: bold;
+}
+
+.bar-box {
+    -fx-pref-height: 4px;
+    -fx-min-height: 4px;
+    -fx-background-color: black;
+    -fx-border-color: $border-dim;
+    -fx-min-width: 10px;
+}
+
+.bar-fill {
+    -fx-background-color: $bg-fill;
+    -fx-pref-height: 4px;
+}

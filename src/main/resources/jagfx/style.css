@@ -1,0 +1,205 @@
+.header {
+  -fx-background-color: #161616;
+  -fx-border-color: transparent transparent #333 transparent;
+  -fx-padding: 0 4px;
+  -fx-pref-height: 36px;
+  -fx-alignment: center-left;
+}
+
+.h-grp {
+  -fx-alignment: center-left;
+  -fx-padding: 0 4px 0 0;
+  -fx-border-color: transparent #333 transparent transparent;
+}
+
+.inspector {
+  -fx-background-color: #1e1e1e;
+  -fx-border-color: transparent #333 transparent transparent;
+  -fx-padding: 8px;
+  -fx-pref-width: 160px;
+}
+
+.rack {
+  -fx-background-color: #121212;
+  -fx-padding: 1px;
+}
+
+.footer {
+  -fx-background-color: #1a1a1a;
+  -fx-border-color: #333 transparent transparent transparent;
+  -fx-pref-height: 150px;
+}
+
+.panel {
+  -fx-border-color: transparent #333 transparent transparent;
+}
+
+.panel-head {
+  -fx-background-color: #2a2a2a;
+  -fx-text-fill: #888;
+  -fx-font-weight: bold;
+  -fx-padding: 4px 6px;
+  -fx-border-color: transparent transparent #333 transparent;
+}
+
+.h-strip {
+  -fx-spacing: 2px;
+  -fx-alignment: top-center;
+  -fx-padding: 2px;
+  -fx-border-color: #333;
+  -fx-background-color: #161616;
+  -fx-border-radius: 2px;
+  -fx-background-radius: 2px;
+  -fx-min-width: 50px;
+  -fx-pref-width: 50px;
+}
+
+.h-head {
+  -fx-font-size: 9px;
+  -fx-font-weight: bold;
+  -fx-text-fill: #888;
+  -fx-border-color: transparent transparent #333 transparent;
+}
+
+.h-sub-row {
+  -fx-alignment: center-left;
+  -fx-spacing: 2px;
+}
+
+.h-lbl {
+  -fx-font-size: 9px;
+  -fx-text-fill: #555;
+  -fx-font-weight: bold;
+}
+
+.bar-box {
+  -fx-pref-height: 4px;
+  -fx-min-height: 4px;
+  -fx-background-color: black;
+  -fx-border-color: #333;
+  -fx-min-width: 10px;
+}
+
+.bar-fill {
+  -fx-background-color: #33bbee;
+  -fx-pref-height: 4px;
+}
+
+.root {
+  -fx-base: #101010;
+  -fx-background-color: #121212;
+  -fx-font-family: "Consolas", "Monaco", "Courier New", monospace;
+  -fx-font-size: 10px;
+  -fx-text-fill: #f0f0f0;
+}
+
+.jag-btn {
+  -fx-background-color: #2a2a2a;
+  -fx-border-color: #333;
+  -fx-text-fill: #bbb;
+  -fx-background-radius: 2px;
+  -fx-padding: 0 4px;
+  -fx-cursor: hand;
+  -fx-alignment: center;
+  -fx-min-height: 18px;
+  -fx-max-height: 18px;
+  -fx-min-width: 16px;
+}
+.jag-btn:hover {
+  -fx-text-fill: #f0f0f0;
+  -fx-background-color: #383838;
+}
+.jag-btn.active {
+  -fx-background-color: #222;
+  -fx-text-fill: #33bbee;
+  -fx-border-color: #33bbee;
+}
+.jag-btn .ikonli-font-icon {
+  -fx-icon-color: -fx-text-fill;
+  -fx-fill: -fx-text-fill;
+}
+
+.jag-input {
+  -fx-background-color: #050505;
+  -fx-border-color: #333;
+  -fx-text-fill: #f0f0f0;
+  -fx-background-radius: 2px;
+  -fx-alignment: center-right;
+  -fx-padding: 0 4px;
+  -fx-min-width: 24px;
+  -fx-min-height: 18px;
+  -fx-max-height: 18px;
+}
+.jag-input:focused {
+  -fx-border-color: #33bbee;
+}
+
+.bar-box {
+  -fx-background-color: #121212;
+  -fx-border-color: #333;
+  -fx-border-radius: 1px;
+  -fx-cursor: h_resize;
+}
+
+.bar-fill {
+  -fx-background-color: #33bbee;
+}
+
+.jag-cell {
+  -fx-background-color: #202020;
+  -fx-border-color: #333;
+  -fx-border-width: 1px;
+}
+.jag-cell:disabled {
+  -fx-opacity: 0.4;
+}
+.jag-cell.selected {
+  -fx-border-color: #33bbee;
+  -fx-background-color: #252525;
+}
+.jag-cell.selected .cell-title {
+  -fx-text-fill: #f0f0f0;
+}
+.jag-cell.muted {
+  -fx-opacity: 0.5;
+}
+.jag-cell.collapsed {
+  -fx-pref-height: 22px;
+  -fx-max-height: 22px;
+}
+
+.cell-head {
+  -fx-background-color: rgba(0, 0, 0, 0.5);
+  -fx-padding: 2px 4px;
+  -fx-alignment: center-left;
+}
+
+.cell-title {
+  -fx-text-fill: #888;
+  -fx-font-weight: bold;
+  -fx-font-size: 9px;
+}
+
+.t-btn {
+  -fx-font-size: 9px;
+  -fx-padding: 0 4px;
+  -fx-background-color: #2a2a2a;
+  -fx-text-fill: #666;
+  -fx-border-color: #121212;
+}
+.t-btn:hover {
+  -fx-text-fill: #f0f0f0;
+}
+
+.h-strip {
+  -fx-spacing: 2px;
+  -fx-alignment: top-center;
+  -fx-padding: 2px;
+  -fx-border-color: transparent #333 transparent transparent;
+}
+
+.h-head {
+  -fx-font-size: 9px;
+  -fx-font-weight: bold;
+  -fx-text-fill: #888;
+}
