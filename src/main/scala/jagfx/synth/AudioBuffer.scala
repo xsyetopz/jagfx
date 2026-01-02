@@ -43,6 +43,14 @@ class AudioBuffer(val samples: Array[Int], val sampleRate: Int = SampleRate):
   def toBytes: Array[Byte] =
     samples.map(s => (s >> 8).toByte)
 
+  /** Converts 16-bit samples to 16-bit signed bytes (big-endian). */
+  def toBytes16BE: Array[Byte] =
+    val result = new Array[Byte](samples.length * 2)
+    for i <- samples.indices do
+      result(i * 2) = (samples(i) >> 8).toByte // high byte
+      result(i * 2 + 1) = samples(i).toByte // low byte
+    result
+
 /** AudioBuffer factory methods. */
 object AudioBuffer:
   /** Creates zero-filled buffer with specified sample count. */
