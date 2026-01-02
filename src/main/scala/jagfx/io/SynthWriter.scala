@@ -64,8 +64,10 @@ object SynthWriter:
       buf: BinaryBuffer,
       harmonics: Vector[Harmonic]
   ): Unit =
-    for h <- harmonics.take(Constants.MaxTones) do
+    val activeHarmonics =
+      harmonics.filter(_.volume > 0).take(Constants.MaxHarmonics)
+    for h <- activeHarmonics do
       buf.writeSmartUnsigned(h.volume)
-      buf.writeSmartSigned(h.semitone)
+      buf.writeSmart(h.semitone)
       buf.writeSmartUnsigned(h.delay)
     buf.writeSmartUnsigned(0)
