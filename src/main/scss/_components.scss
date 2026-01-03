@@ -39,6 +39,41 @@
     }
 }
 
+.jag-check {
+    -fx-text-fill: $text-dim;
+    -fx-font-size: 10px;
+    -fx-cursor: hand;
+    -fx-padding: 0 4px;
+    -fx-alignment: center-left;
+
+    .box {
+        -fx-background-color: $bg-input;
+        -fx-border-color: $border-dim;
+        -fx-border-radius: 2px;
+        -fx-padding: 2px;
+    }
+
+    .mark {
+        -fx-background-color: transparent;
+        -fx-shape: "M0,3 L2,5 L5,0 L2,3 L0,3 Z";
+        /* Simple tick */
+        -fx-scale-shape: false;
+    }
+
+    &:selected {
+        -fx-text-fill: $text-main;
+
+        .box {
+            -fx-background-color: $bg-btn-hover;
+            -fx-border-color: $text-accent;
+        }
+
+        .mark {
+            -fx-background-color: $text-accent;
+        }
+    }
+}
+
 .jag-input {
     -fx-background-color: $bg-input;
     -fx-border-color: $border-dim;
