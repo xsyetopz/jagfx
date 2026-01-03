@@ -7,6 +7,7 @@ class SynthReaderSuite extends munit.FunSuite:
 
   test("reads cow_death (1 tone) correctly"):
     val result = SynthReader.read(cowDeathHex)
+    if result.isLeft then println(s"cow_death failure: ${result.left.get}")
     assert(result.isRight)
     val file = result.toOption.get
 
@@ -16,6 +17,8 @@ class SynthReaderSuite extends munit.FunSuite:
 
   test("reads protect_from_magic (2 tones) correctly"):
     val result = SynthReader.read(protectFromMagicHex)
+    if result.isLeft then
+      println(s"protect_from_magic failure: ${result.left.get}")
     assert(result.isRight)
     val file = result.toOption.get
 
