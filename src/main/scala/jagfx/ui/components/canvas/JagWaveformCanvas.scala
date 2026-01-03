@@ -56,7 +56,7 @@ class JagWaveformCanvas extends JagBaseCanvas:
         val normalized = sample.toDouble / Int16.UnsignedMid
         val y = midY - (normalized * (h / 2)).toInt
 
-        if x > 0 then line(buffer, w, h, prevX, prevY, x, y, Graph)
+        if x > 0 then line(buffer, w, h, prevX, prevY, x, y, Output)
 
         prevX = x
         prevY = math.max(0, math.min(h - 1, y))
