@@ -22,6 +22,12 @@ class ToneViewModel:
   val gateSilence = new EnvelopeViewModel()
   val gateDuration = new EnvelopeViewModel()
 
+  // Transition Curve
+  val filterEnvelope = new EnvelopeViewModel()
+
+  // Poles/Zeros
+  private var preservedFilter: Option[Filter] = None
+
   // Properties
   val duration = new SimpleIntegerProperty(1000)
   val startOffset = new SimpleIntegerProperty(0)
@@ -43,7 +49,8 @@ class ToneViewModel:
       tremoloRate,
       tremoloDepth,
       gateSilence,
-      gateDuration
+      gateDuration,
+      filterEnvelope
     )
       .foreach(_.addChangeListener(cb))
     harmonics.foreach(_.addChangeListener(cb))
@@ -64,6 +71,7 @@ class ToneViewModel:
         tremoloDepth.clear()
         gateSilence.clear()
         gateDuration.clear()
+        filterEnvelope.clear()
 
         t.vibratoRate.foreach(vibratoRate.load)
         t.vibratoDepth.foreach(vibratoDepth.load)
@@ -71,6 +79,9 @@ class ToneViewModel:
         t.tremoloDepth.foreach(tremoloDepth.load)
         t.gateSilence.foreach(gateSilence.load)
         t.gateDuration.foreach(gateDuration.load)
+
+        preservedFilter = t.filter
+        t.filter.flatMap(_.envelope).foreach(filterEnvelope.load)
 
         duration.set(t.duration)
         startOffset.set(t.start)
@@ -94,6 +105,9 @@ class ToneViewModel:
     tremoloDepth.clear()
     gateSilence.clear()
     gateDuration.clear()
+    filterEnvelope.clear()
+    preservedFilter = None
+
     duration.set(1000)
     startOffset.set(0)
     reverbDelay.set(0)
@@ -105,6 +119,24 @@ class ToneViewModel:
     else
       val activeHarmonics =
         harmonics.take(5).filter(_.active.get).map(_.toModel()).toVector
+
+      val filterModel = preservedFilter match
+        case Some(f) =>
+          val env =
+            if filterEnvelope.isEmpty then None
+            else Some(filterEnvelope.toModel())
+          Some(f.copy(envelope = env))
+        case None if !filterEnvelope.isEmpty =>
+          val empty = Filter(
+            Array(0, 0),
+            Array(0, 0),
+            Array.ofDim(2, 2, 4),
+            Array.ofDim(2, 2, 4),
+            None
+          )
+          Some(empty.copy(envelope = Some(filterEnvelope.toModel())))
+        case None => None
+
       Some(
         Tone(
           pitch.toModel(),
@@ -119,7 +151,8 @@ class ToneViewModel:
           reverbDelay.get,
           reverbVolume.get,
           duration.get,
-          startOffset.get
+          startOffset.get,
+          filterModel
         )
       )
 
