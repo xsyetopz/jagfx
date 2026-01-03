@@ -73,6 +73,7 @@ class RackController(viewModel: SynthViewModel, inspector: InspectorController):
   private val activeToneChangeListener: ChangeListener[Number] = (_, _, _) =>
     bindActiveTone()
   viewModel.activeToneIndexProperty.addListener(activeToneChangeListener)
+  viewModel.fileLoadedProperty.addListener((_, _, _) => bindActiveTone())
 
   for i <- 0 until viewModel.getTones.size do
     viewModel.getTones.get(i).addChangeListener(() => updateOutputWaveform())

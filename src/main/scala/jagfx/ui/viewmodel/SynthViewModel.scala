@@ -67,6 +67,9 @@ class SynthViewModel:
 
   def totalDurationProperty: IntegerProperty = totalDuration
 
+  private val fileLoaded = new SimpleObjectProperty[java.lang.Long](0L)
+  def fileLoadedProperty: ObjectProperty[java.lang.Long] = fileLoaded
+
   def load(file: SynthFile): Unit =
     import Constants._
     loopStart.set(file.loop.begin)
@@ -82,6 +85,8 @@ class SynthViewModel:
       .maxOption
       .getOrElse(0)
     totalDuration.set(maxDur)
+
+    fileLoaded.set(System.currentTimeMillis())
 
   def toModel(): SynthFile =
     val toneModels = tones
