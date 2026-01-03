@@ -4,7 +4,6 @@ import jagfx.model._
 import jagfx.Constants
 import jagfx.utils.MathUtils.clamp
 
-private val SemitoneBase: Double = 1.0057929410678534
 private val PhaseScale: Double = 32.768
 private val NoisePhaseDiv: Int = 2607
 private val MaxHarmonics: Int = 5
@@ -158,7 +157,10 @@ object ToneSynthesizer:
         volumes(harmonic) = (h.volume << 14) / 100
         semitones(harmonic) =
           ((tone.pitchEnvelope.end - tone.pitchEnvelope.start) * PhaseScale *
-            math.pow(SemitoneBase, h.semitone) / samplesPerStep).toInt
+            math.pow(
+              LookupTables.SemitoneBase,
+              h.semitone
+            ) / samplesPerStep).toInt
         starts(harmonic) =
           (tone.pitchEnvelope.start * PhaseScale / samplesPerStep).toInt
 
