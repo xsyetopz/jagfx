@@ -36,6 +36,14 @@ class SynthWriterSuite extends munit.FunSuite:
     assertEquals(reread.activeTones.size, 2)
     assertEquals(reread.loop, original.loop)
 
+  test("ice_cast (2 tones) roundtrip preserves model equality"):
+    val original = SynthReader.read(iceCastHex).toOption.get
+    val written = SynthWriter.write(original)
+    val reread = SynthReader.read(written).toOption.get
+
+    assertEquals(reread.activeTones.size, 2)
+    assertEquals(reread.loop, original.loop)
+
   test("writes empty file correctly"):
     val emptyFile = SynthFile(Vector.fill(10)(None), LoopParams(100, 200))
     val written = SynthWriter.write(emptyFile)

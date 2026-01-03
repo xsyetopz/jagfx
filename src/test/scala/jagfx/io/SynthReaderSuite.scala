@@ -26,6 +26,15 @@ class SynthReaderSuite extends munit.FunSuite:
     val toneIndices = file.activeTones.map(_._1)
     assertEquals(toneIndices, Vector(0, 1))
 
+  test("reads ice_cast (2 tones) correctly"):
+    val result = SynthReader.read(iceCastHex)
+    assert(result.isRight)
+    val file = result.toOption.get
+
+    assertEquals(file.activeTones.size, 2)
+    assertEquals(file.loop.begin, 0)
+    assertEquals(file.loop.end, 0)
+
   test("parses envelope forms correctly"):
     val cow = SynthReader.read(cowDeathHex).toOption.get
     val (_, cowTone) = cow.activeTones.head
