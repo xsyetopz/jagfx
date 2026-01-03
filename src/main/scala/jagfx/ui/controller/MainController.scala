@@ -22,7 +22,8 @@ object MainController:
     root.setCenter(rack.getView)
     root.setBottom(footer.getView)
 
-    // wire playhead callback
+    rack.bind()
+
     header.onPlayheadUpdate = pos =>
       if pos < 0 then rack.hidePlayhead()
       else rack.setPlayheadPosition(pos)
