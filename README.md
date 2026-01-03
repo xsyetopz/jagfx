@@ -1,9 +1,10 @@
-<h1 align="center">Jagex Additive Synthesizer</h1>
+# Jagex Additive Synthesizer
 
 <p align="center">
   <img
     src="assets/370_cow_death.png"
     alt="Cow Death"
+    width="50%"
     onerror="this.onerror=null;this.src='https://raw.githubusercontent.com/xsyetopz/jagfx-scala/main/assets/370_cow_death.png';"
   >
 </p>
