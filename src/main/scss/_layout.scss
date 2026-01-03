@@ -1,11 +1,13 @@
 @use "variables" as *;
 
-// Structural Layout
-
 // Layout Sections
-.header {
-    -fx-background-color: $bg-header;
+
+.header-root {
     -fx-border-color: transparent transparent $border-dim transparent;
+}
+
+.header-grid {
+    -fx-background-color: $bg-header;
     -fx-padding: 0 4px;
     -fx-pref-height: 36px;
     -fx-alignment: center-left;
@@ -17,11 +19,23 @@
     -fx-border-color: transparent $border-dim transparent transparent;
 }
 
-.inspector {
+.inspector-scroll {
     -fx-background-color: $bg-panel;
+    -fx-background: $bg-panel;
     -fx-border-color: transparent $border-dim transparent transparent;
+    -fx-pref-width: 170px;
+}
+
+.inspector-content {
     -fx-padding: 8px;
-    -fx-pref-width: 160px;
+    -fx-background-color: $bg-panel;
+}
+
+.separator .line {
+    -fx-border-style: solid;
+    -fx-border-width: 1px 0 0 0;
+    -fx-border-color: $border-dim;
+    -fx-background-color: transparent;
 }
 
 .rack {
@@ -75,14 +89,14 @@
 
 .h-lbl {
     -fx-font-size: 9px;
-    -fx-text-fill: #555;
+    -fx-text-fill: $text-subtle;
     -fx-font-weight: bold;
 }
 
 .bar-box {
     -fx-pref-height: 4px;
     -fx-min-height: 4px;
-    -fx-background-color: black;
+    -fx-background-color: $bg-root;
     -fx-border-color: $border-dim;
     -fx-min-width: 10px;
 }

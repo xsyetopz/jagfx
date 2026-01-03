@@ -1,6 +1,9 @@
-.header {
-  -fx-background-color: #161616;
+.header-root {
   -fx-border-color: transparent transparent #333 transparent;
+}
+
+.header-grid {
+  -fx-background-color: #161616;
   -fx-padding: 0 4px;
   -fx-pref-height: 36px;
   -fx-alignment: center-left;
@@ -12,11 +15,23 @@
   -fx-border-color: transparent #333 transparent transparent;
 }
 
-.inspector {
+.inspector-scroll {
   -fx-background-color: #1e1e1e;
+  -fx-background: #1e1e1e;
   -fx-border-color: transparent #333 transparent transparent;
+  -fx-pref-width: 170px;
+}
+
+.inspector-content {
   -fx-padding: 8px;
-  -fx-pref-width: 160px;
+  -fx-background-color: #1e1e1e;
+}
+
+.separator .line {
+  -fx-border-style: solid;
+  -fx-border-width: 1px 0 0 0;
+  -fx-border-color: #333;
+  -fx-background-color: transparent;
 }
 
 .rack {
@@ -75,7 +90,7 @@
 .bar-box {
   -fx-pref-height: 4px;
   -fx-min-height: 4px;
-  -fx-background-color: black;
+  -fx-background-color: #121212;
   -fx-border-color: #333;
   -fx-min-width: 10px;
 }
@@ -211,7 +226,7 @@
   -fx-font-size: 9px;
   -fx-padding: 0 4px;
   -fx-background-color: #2a2a2a;
-  -fx-text-fill: #666;
+  -fx-text-fill: #555;
   -fx-border-color: #121212;
 }
 .t-btn:hover {
@@ -261,4 +276,60 @@
 .timing-inspector {
   -fx-border-color: #333 transparent transparent transparent;
   -fx-padding: 8px 0 0 0;
+}
+
+.segment-table {
+  -fx-border-color: #333;
+  -fx-border-width: 1px;
+}
+
+.segment-table-header {
+  -fx-background-color: #161616;
+  -fx-padding: 2px 0;
+  -fx-border-color: transparent transparent #333 transparent;
+  -fx-border-width: 0 0 1px 0;
+}
+
+.segment-table-scroll {
+  -fx-background-color: transparent;
+  -fx-background: transparent;
+  -fx-border-width: 0;
+  -fx-max-height: 120px;
+}
+
+.segment-table-row {
+  -fx-padding: 1px 0;
+  -fx-border-color: transparent transparent #333 transparent;
+  -fx-border-width: 0 0 1px 0;
+}
+
+.segment-add-btn {
+  -fx-background-radius: 0;
+  -fx-border-width: 0;
+}
+
+.table-field .text-field {
+  -fx-background-insets: 0;
+  -fx-background-radius: 0;
+  -fx-font-size: 9px;
+  -fx-padding: 0 2px;
+}
+
+.h-head-small {
+  -fx-font-size: 9px;
+  -fx-text-fill: #888;
+  -fx-font-weight: bold;
+  -fx-alignment: center-left;
+}
+
+.dim-label {
+  -fx-text-fill: #555;
+  -fx-font-size: 9px;
+  -fx-alignment: center-right;
+  -fx-padding: 0 4px 0 0;
+}
+
+.icon-dim {
+  -fx-fill: #888;
+  -fx-icon-color: #888;
 }

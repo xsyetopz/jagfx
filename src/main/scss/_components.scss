@@ -28,7 +28,7 @@
     }
 
     &.active {
-        -fx-background-color: #222;
+        -fx-background-color: $bg-btn-active;
         -fx-text-fill: $text-accent;
         -fx-border-color: $border-accent;
     }
@@ -103,7 +103,7 @@
 
 .jag-cell {
     -fx-background-color: $bg-cell;
-    -fx-border-color: #333;
+    -fx-border-color: $border-dim;
     -fx-border-width: 1px;
 
     &:disabled {
@@ -141,7 +141,7 @@
     -fx-font-size: 9px;
     -fx-padding: 0 4px;
     -fx-background-color: $bg-btn;
-    -fx-text-fill: #666;
+    -fx-text-fill: $text-subtle;
     -fx-border-color: $bg-root;
 
     &:hover {
@@ -163,6 +163,7 @@
 }
 
 // Help Pane
+
 .help-header {
     -fx-font-size: 10px;
     -fx-font-weight: bold;
@@ -176,7 +177,8 @@
     -fx-wrap-text: true;
 }
 
-// Grouped panes for modulation and gate controls
+// Grouped panes
+
 .modulation-pane,
 .gate-pane {
     -fx-background-color: $bg-panel;
@@ -194,4 +196,62 @@
 .timing-inspector {
     -fx-border-color: $border-dim transparent transparent transparent;
     -fx-padding: 8px 0 0 0;
+}
+
+// Envelope Segment Editor
+
+.segment-table {
+    -fx-border-color: $border-dim;
+    -fx-border-width: 1px;
+}
+
+.segment-table-header {
+    -fx-background-color: $bg-header;
+    -fx-padding: 2px 0;
+    -fx-border-color: transparent transparent $border-dim transparent;
+    -fx-border-width: 0 0 1px 0;
+}
+
+.segment-table-scroll {
+    -fx-background-color: transparent;
+    -fx-background: transparent;
+    -fx-border-width: 0;
+    -fx-max-height: 120px;
+}
+
+.segment-table-row {
+    -fx-padding: 1px 0;
+    -fx-border-color: transparent transparent $border-dim transparent;
+    -fx-border-width: 0 0 1px 0;
+}
+
+.segment-add-btn {
+    -fx-background-radius: 0;
+    -fx-border-width: 0;
+}
+
+.table-field .text-field {
+    -fx-background-insets: 0;
+    -fx-background-radius: 0;
+    -fx-font-size: 9px;
+    -fx-padding: 0 2px;
+}
+
+.h-head-small {
+    -fx-font-size: 9px;
+    -fx-text-fill: $text-dim;
+    -fx-font-weight: bold;
+    -fx-alignment: center-left;
+}
+
+.dim-label {
+    -fx-text-fill: $text-subtle;
+    -fx-font-size: 9px;
+    -fx-alignment: center-right;
+    -fx-padding: 0 4px 0 0;
+}
+
+.icon-dim {
+    -fx-fill: $text-dim;
+    -fx-icon-color: $text-dim;
 }
