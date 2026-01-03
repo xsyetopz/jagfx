@@ -15,16 +15,24 @@ object SynthReader:
     * failure.
     */
   def read(data: Array[Byte]): Either[ParseError, SynthFile] =
+    val buf = BinaryBuffer(data)
     try
-      val buf = BinaryBuffer(data)
       val tones = readTones(buf)
-      val loopBegin = buf.readU16BE()
-      val loopEnd = buf.readU16BE()
-      Right(SynthFile(tones, LoopParams(loopBegin, loopEnd)))
+
+      val loopParams =
+        if buf.remaining >= 4 then LoopParams(buf.readU16BE(), buf.readU16BE())
+        else
+          scribe.warn("File truncated; defaulting Loop parameters to 0")
+          LoopParams(0, 0)
+
+      Right(SynthFile(tones, loopParams))
     catch
       case e: Exception =>
-        scribe.error(s"Parse failed: ${e.getMessage}")
-        Left(ParseError(e.getMessage, -1))
+        scribe.error(
+          s"Parse failed at pos ${buf.pos}: ${e.getClass.getName} ${e.getMessage}"
+        )
+        e.printStackTrace()
+        Left(ParseError(e.getMessage, buf.pos))
 
   /** Reads `.synth` file from filesystem path. Returns `Left` on IO or parse
     * failure.
@@ -40,11 +48,13 @@ object SynthReader:
         Left(ParseError(s"IO Error: ${e.getMessage}", -1))
 
   private def readTones(buf: BinaryBuffer): Vector[Option[Tone]] =
-    (0 until MaxTones).map { _ =>
-      if buf.peek() != 0 then Some(readTone(buf))
-      else
-        buf.pos += 1
-        None
+    (0 until MaxTones).map { i =>
+      if buf.remaining > 0 then
+        if buf.peek() != 0 then Some(readTone(buf))
+        else
+          buf.pos += 1
+          None
+      else None
     }.toVector
 
   private def readTone(buf: BinaryBuffer): Tone =
@@ -60,10 +70,16 @@ object SynthReader:
     val reverbVolume = buf.readSmartUnsigned()
     val duration = buf.readU16BE()
     val start = buf.readU16BE()
+    val filter = readFilter(buf)
 
-    val t = Tone(
-      pitchEnvelope = pitchEnvelope,
-      volumeEnvelope = volumeEnvelope,
+    def fixEnvelope(env: Envelope, dur: Int): Envelope =
+      if env.segments.isEmpty && env.start != env.end then
+        env.copy(segments = Vector(EnvelopeSegment(dur, env.end)))
+      else env
+
+    Tone(
+      pitchEnvelope = fixEnvelope(pitchEnvelope, duration),
+      volumeEnvelope = fixEnvelope(volumeEnvelope, duration),
       vibratoRate = vibratoRate,
       vibratoDepth = vibratoDepth,
       tremoloRate = tremoloRate,
@@ -74,34 +90,101 @@ object SynthReader:
       reverbDelay = reverbDelay,
       reverbVolume = reverbVolume,
       duration = duration,
-      start = start
+      start = start,
+      filter = filter
     )
-    harmonics.zipWithIndex.foreach { case (h, i) =>
-      scribe.debug(
-        s"  H$i: Vol=${h.volume}, Semi=${h.semitone}, Dly=${h.delay}"
-      )
-    }
-    t
 
-  private def readEnvelope(buf: BinaryBuffer): Envelope =
-    val form = WaveForm.fromId(buf.readU8())
-    val start = buf.readS32BE()
-    val end = buf.readS32BE()
+  private def readFilter(buf: BinaryBuffer): Option[Filter] =
+    val count = buf.readU8()
+    val pairCount0 = count >> 4
+    val pairCount1 = count & 0xf
+
+    if count == 0 then
+      Some(
+        Filter(
+          Array(0, 0),
+          Array(0, 0),
+          Array.ofDim(2, 2, 4),
+          Array.ofDim(2, 2, 4),
+          None
+        )
+      )
+    else
+      val unity0 = buf.readU16BE()
+      val unity1 = buf.readU16BE()
+      val migrated = buf.readU8()
+
+      val maxPairs = math.max(pairCount0, pairCount1)
+      val pairPhase = Array.ofDim[Int](2, 2, maxPairs)
+      val pairMagnitude = Array.ofDim[Int](2, 2, maxPairs)
+
+      for p <- 0 until pairCount0 do
+        pairPhase(0)(0)(p) = buf.readU16BE()
+        pairMagnitude(0)(0)(p) = buf.readU16BE()
+
+      for p <- 0 until pairCount1 do
+        pairPhase(1)(0)(p) = buf.readU16BE()
+        pairMagnitude(1)(0)(p) = buf.readU16BE()
+
+      for dir <- 0 until 2 do
+        val pairs = if dir == 0 then pairCount0 else pairCount1
+        for p <- 0 until pairs do
+          if (migrated & (1 << (dir * 4) << p)) != 0 then
+            pairPhase(dir)(1)(p) = buf.readU16BE()
+            pairMagnitude(dir)(1)(p) = buf.readU16BE()
+          else
+            pairPhase(dir)(1)(p) = pairPhase(dir)(0)(p)
+            pairMagnitude(dir)(1)(p) = pairMagnitude(dir)(0)(p)
+
+      val envelope =
+        if migrated != 0 || unity1 != unity0 then
+          val env = readEnvelopeSegments(buf)
+          Some(env.copy(start = 65535, end = 65535))
+        else None
+
+      Some(
+        Filter(
+          Array(pairCount0, pairCount1),
+          Array(unity0, unity1),
+          pairPhase,
+          pairMagnitude,
+          envelope
+        )
+      )
+
+  private def readEnvelopeSegments(buf: BinaryBuffer): Envelope =
     val length = buf.readU8()
     val segments = (0 until length).map { _ =>
+      val dur = buf.readU16BE()
+      val peak = buf.readU16BE()
+      EnvelopeSegment(dur, peak)
+    }.toVector
+
+    Envelope(WaveForm.Off, 0, 0, segments)
+
+  private def readEnvelope(buf: BinaryBuffer): Envelope =
+    val formId = buf.readU8()
+    val start = buf.readS32BE()
+    val end = buf.readS32BE()
+    val form = WaveForm.fromId(formId)
+
+    val segmentLength = buf.readU8()
+    val segments = (0 until segmentLength).map { _ =>
       EnvelopeSegment(buf.readU16BE(), buf.readU16BE())
     }.toVector
+
     Envelope(form, start, end, segments)
 
   private def readOptionalEnvelopePair(
       buf: BinaryBuffer
   ): (Option[Envelope], Option[Envelope]) =
-    if buf.peek() != 0 then
+    val marker = buf.peek()
+    if marker != 0 then
       val env1 = readEnvelope(buf)
       val env2 = readEnvelope(buf)
       (Some(env1), Some(env2))
     else
-      buf.pos += 1
+      buf.pos += 1 // eat '0' flag
       (None, None)
 
   private def readHarmonics(buf: BinaryBuffer): Vector[Harmonic] =
