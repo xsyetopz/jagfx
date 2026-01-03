@@ -23,6 +23,7 @@ object Constants:
     val Max: Int = 32767
     val Range: Int = 65536
     val UnsignedMid: Int = 32768
+    val Quarter: Int = 16384
 
   /** WAV file format constants. */
   object Wav:
