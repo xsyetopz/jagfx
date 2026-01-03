@@ -1,6 +1,7 @@
 package jagfx.synth
 
 import jagfx.model._
+import jagfx.Constants.Int16
 
 /** Stateful envelope evaluator that interpolates between segments over time.
   * Call `reset()` before each synthesis pass, then `evaluate()` for each
@@ -24,8 +25,9 @@ class EnvelopeEvaluator(envelope: Envelope):
     amplitude = envelope.start << 15
     ticks = 0
 
-  /** Evaluates envelope at current tick, advancing internal state. Returns
-    * interpolated value scaled to `0`-`65535` range.
+  /** Evaluates envelope at current tick, advancing internal state.
+    *
+    * Returns interpolated value scaled to `0-65535` range.
     */
   def evaluate(period: Int): Int =
     if envelope.segments.isEmpty then return envelope.start
@@ -40,7 +42,7 @@ class EnvelopeEvaluator(envelope: Envelope):
       threshold = ((envelope
         .segments(position)
         .duration
-        .toDouble / 65536.0) * period).toInt
+        .toDouble / Int16.Range) * period).toInt
 
       if threshold > ticks then
         delta = ((envelope
