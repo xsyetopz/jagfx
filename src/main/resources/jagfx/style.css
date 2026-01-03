@@ -243,3 +243,22 @@
   -fx-text-fill: #888;
   -fx-wrap-text: true;
 }
+
+.modulation-pane,
+.gate-pane {
+  -fx-background-color: #1e1e1e;
+  -fx-border-color: #333;
+  -fx-border-radius: 4px;
+  -fx-background-radius: 4px;
+  -fx-padding: 2px;
+}
+.modulation-pane .panel-head,
+.gate-pane .panel-head {
+  -fx-font-size: 9px;
+  -fx-padding: 2px 4px;
+}
+
+.timing-inspector {
+  -fx-border-color: #333 transparent transparent transparent;
+  -fx-padding: 8px 0 0 0;
+}
