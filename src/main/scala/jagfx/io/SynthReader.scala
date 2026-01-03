@@ -24,7 +24,7 @@ object SynthReader:
       val loopParams =
         if buf.remaining >= 4 then LoopParams(buf.readU16BE(), buf.readU16BE())
         else
-          scribe.warn("File truncated; defaulting Loop parameters to 0...")
+          scribe.warn("File truncated; defaulting loop parameters to 0...")
           LoopParams(0, 0)
 
       Right(SynthFile(tones, loopParams))
