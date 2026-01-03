@@ -12,6 +12,8 @@ object JagFXCli:
       if args.nonEmpty && args(0) == "--" then args.drop(1)
       else args
 
+    // scribe.Logger.root.withMinimumLevel(scribe.Level.Debug).replace()
+
     if cleanArgs.contains("--help") || cleanArgs.contains("-h") then
       println("Usage: jagfx-cli <input.synth> <output.wav> [loopCount]")
       System.exit(0)
