@@ -97,14 +97,64 @@ object SynthReader:
     )
 
   private def readFilter(buf: BinaryBuffer): Option[Filter] =
+    if buf.remaining == 0 then return None
+
+    val startPos = buf.pos
     val count = buf.readU8()
     if count == 0 then return None
 
+    // 2x unity + migrated = 5 bytes
+    if buf.remaining < 5 then
+      buf.pos = startPos
+      return None
+
     val pairCount0 = count >> 4
     val pairCount1 = count & 0xf
+    // IF see high pair counts, THEN likely NOT filter but start of next tone
+    if pairCount0 > 3 || pairCount1 > 3 then
+      buf.pos = startPos
+      return None
+
     val unity0 = buf.readU16BE()
     val unity1 = buf.readU16BE()
     val migrated = buf.readU8()
+
+    // (cnt0 + cnt1) * 2 fields * 2 bytes (u16) = (cnt0+cnt1) * 4
+    val baseBytes = (pairCount0 + pairCount1) * 4
+    if buf.remaining < baseBytes then
+      buf.pos = startPos
+      return None
+
+    // count bits set in 'migrated' for active pairs
+    var migratedPairsCount = 0
+    for dir <- 0 until 2 do
+      val pairs = if dir == 0 then pairCount0 else pairCount1
+      for p <- 0 until pairs do
+        if (migrated & (1 << (dir * 4) << p)) != 0 then migratedPairsCount += 1
+
+    val migratedBytes = migratedPairsCount * 4
+    if buf.remaining < baseBytes + migratedBytes then
+      buf.pos = startPos
+      return None
+
+    val hasEnvelope = migrated != 0 || unity1 != unity0
+    if hasEnvelope then
+      // need at least 1 byte for envelope len
+      val dataPending = baseBytes + migratedBytes
+      if buf.remaining < dataPending + 1 then
+        buf.pos = startPos
+        return None
+
+      val savedPos = buf.pos
+      buf.pos += dataPending // skip pairs temp
+      val envLen = buf.readU8()
+      val envBytes = envLen * 4 // dur(2) + peak(2)
+
+      if buf.remaining < envBytes then
+        buf.pos = startPos
+        return None
+
+      buf.pos = savedPos // restore to start of pairs
 
     val maxPairs = math.max(pairCount0, pairCount1)
     val pairPhase = Array.ofDim[Int](2, 2, maxPairs)
@@ -121,7 +171,7 @@ object SynthReader:
     )
 
     val envelope =
-      if migrated != 0 || unity1 != unity0 then
+      if hasEnvelope then
         val env = readEnvelopeSegments(buf)
         Some(env.copy(start = 65535, end = 65535))
       else None
