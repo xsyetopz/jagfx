@@ -176,9 +176,6 @@ class HeaderController(viewModel: SynthViewModel) extends IController[GridPane]:
     group.setStyle("-fx-border-color: transparent;")
     group.setAlignment(Pos.CENTER)
 
-    val btnInit = JagButton("")
-    btnInit.setGraphic(IconUtils.icon("mdi2f-file-plus"))
-
     val btn16 = JagButton("16-BIT")
     btn16.setOnAction(_ =>
       UserPreferences.export16Bit.set(!UserPreferences.export16Bit.get)
@@ -188,6 +185,8 @@ class HeaderController(viewModel: SynthViewModel) extends IController[GridPane]:
     )
     btn16.setActive(UserPreferences.export16Bit.get)
 
+    val btnInit = JagButton("")
+    btnInit.setGraphic(IconUtils.icon("mdi2f-file-plus"))
     val btnOpen = JagButton("")
     btnOpen.setGraphic(IconUtils.icon("mdi2f-folder-open"))
     val btnSave = JagButton("")
