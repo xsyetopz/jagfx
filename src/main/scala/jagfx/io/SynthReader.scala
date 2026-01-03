@@ -22,7 +22,7 @@ object SynthReader:
       val loopParams =
         if buf.remaining >= 4 then LoopParams(buf.readU16BE(), buf.readU16BE())
         else
-          scribe.warn("File truncated; defaulting Loop parameters to 0")
+          scribe.warn("File truncated; defaulting Loop parameters to 0...")
           LoopParams(0, 0)
 
       Right(SynthFile(tones, loopParams))
@@ -99,16 +99,7 @@ object SynthReader:
     val pairCount0 = count >> 4
     val pairCount1 = count & 0xf
 
-    if count == 0 then
-      Some(
-        Filter(
-          Array(0, 0),
-          Array(0, 0),
-          Array.ofDim(2, 2, 4),
-          Array.ofDim(2, 2, 4),
-          None
-        )
-      )
+    if count == 0 then None // no filter
     else
       val unity0 = buf.readU16BE()
       val unity1 = buf.readU16BE()
@@ -169,7 +160,15 @@ object SynthReader:
     val form = WaveForm.fromId(formId)
 
     val segmentLength = buf.readU8()
-    val segments = (0 until segmentLength).map { _ =>
+    // each segment = 4 bytes (2x u16)
+    val maxSegments = buf.remaining / 4
+    val actualSegmentCount = math.min(segmentLength, maxSegments)
+    if actualSegmentCount < segmentLength then
+      scribe.warn(
+        s"Segment count truncated from $segmentLength to $actualSegmentCount (buffer exhausted)"
+      )
+
+    val segments = (0 until actualSegmentCount).map { _ =>
       EnvelopeSegment(buf.readU16BE(), buf.readU16BE())
     }.toVector
 
