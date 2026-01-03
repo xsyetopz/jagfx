@@ -10,9 +10,21 @@ import jagfx.ui.viewmodel.SynthViewModel
 import jagfx.ui.components.slider._
 import jagfx.ui.components.field._
 import jagfx.ui.components.button._
+import jagfx.Constants
 
 /** Harmonics panel with H1-5/H6-10 bank switcher. */
 object HarmonicsPanel:
+  // store strip components for rebinding
+  private case class HStrip(
+      strip: VBox,
+      label: Label,
+      sRow: HarmonicsRow,
+      vRow: HarmonicsRow,
+      dRow: HarmonicsRow
+  )
+
+  private val HalfMaxHarmonics = Constants.MaxHarmonics - 5
+
   def create(viewModel: SynthViewModel): VBox =
     val panel = VBox()
     panel.getStyleClass.add("panel")
@@ -21,57 +33,40 @@ object HarmonicsPanel:
     // 0 = H1-5, 5 = H6-10
     var bankOffset = 0
 
-    val headRow = HBox(4)
+    val headRow = StackPane()
     headRow.setAlignment(Pos.CENTER)
 
     val head = Label("HARMONICS")
     head.getStyleClass.add("panel-head")
-    HBox.setHgrow(head, Priority.ALWAYS)
+    head.setMaxWidth(Double.MaxValue)
+    head.setAlignment(Pos.CENTER)
 
     val bankBtn = JagButton("1-5")
-    bankBtn.setPrefWidth(36)
+    bankBtn.setPrefWidth(40)
+    StackPane.setAlignment(bankBtn, Pos.CENTER_RIGHT)
+    StackPane.setMargin(bankBtn, new javafx.geometry.Insets(0, 4, 0, 0))
 
     headRow.getChildren.addAll(head, bankBtn)
 
-    val grid = HBox(4)
+    val grid = HBox(2)
     grid.setId("harmonics")
     VBox.setVgrow(grid, Priority.ALWAYS)
 
-    // store strip components for rebinding
-    case class HStrip(
-        strip: VBox,
-        label: Label,
-        sRow: HarmonicsRow,
-        vRow: HarmonicsRow,
-        dRow: HarmonicsRow
-    )
-    val strips = new Array[HStrip](5)
+    val strips = new Array[HStrip](HalfMaxHarmonics)
 
-    for i <- 0 until 5 do
-      val strip = VBox()
-      strip.getStyleClass.add("h-strip")
-      HBox.setHgrow(strip, Priority.ALWAYS)
-
-      val label = Label(s"H${i + 1}")
-      label.getStyleClass.add("h-head")
-
-      val sRow = HarmonicsRow("PIT", -120, 120, 9.0, "%.1f")
-      val vRow = HarmonicsRow("VOL", 0, 100)
-      val dRow = HarmonicsRow("DEL", 0, 1000)
-
-      strip.getChildren.addAll(label, sRow.view, vRow.view, dRow.view)
-      grid.getChildren.add(strip)
-      strips(i) = HStrip(strip, label, sRow, vRow, dRow)
+    for i <- 0 until HalfMaxHarmonics do
+      val hs = createStrip(i)
+      strips(i) = hs
+      grid.getChildren.add(hs.strip)
 
     var volListeners =
-      Array.fill[Option[(IntegerProperty, ChangeListener[Number])]](5)(None)
+      Array.fill[Option[(IntegerProperty, ChangeListener[Number])]](
+        HalfMaxHarmonics
+      )(None)
 
     def bindHarmonics(): Unit =
-      for i <- 0 until 5 do
+      for i <- 0 until HalfMaxHarmonics do
         val hIdx = bankOffset + i
-        val hs = strips(i)
-        hs.label.setText(s"H${hIdx + 1}")
-
         val h = viewModel.getActiveTone.harmonics(hIdx)
 
         // remove old listener
@@ -79,22 +74,20 @@ object HarmonicsPanel:
           prop.removeListener(listener)
         }
 
+        val hs = strips(i)
+        hs.label.setText(s"HARMONIC ${hIdx + 1}")
         hs.sRow.bind(h.semitone)
         hs.vRow.bind(h.volume)
         hs.dRow.bind(h.delay)
 
-        val volListener: ChangeListener[Number] = (_, _, newVal) =>
-          val dim = newVal.intValue == 0
-          hs.strip.setOpacity(if dim then 0.5 else 1.0)
-          hs.sRow.view.setDisable(dim)
-          hs.dRow.view.setDisable(dim)
-
+        val volListener = createVolListener(hs)
         h.volume.addListener(volListener)
         volListeners(i) = Some((h.volume, volListener))
+
         volListener.changed(null, null, h.volume.get)
 
     bankBtn.setOnAction(_ =>
-      bankOffset = if bankOffset == 0 then 5 else 0
+      bankOffset = if bankOffset == 0 then HalfMaxHarmonics else 0
       bankBtn.setText(if bankOffset == 0 then "1-5" else "6-10")
       bindHarmonics()
     )
@@ -105,7 +98,29 @@ object HarmonicsPanel:
     panel.getChildren.addAll(headRow, grid)
     panel
 
-/** Single row in harmonics strip (`PIT`/`VOL`/`DEL`). */
+  private def createStrip(index: Int): HStrip =
+    val strip = VBox()
+    strip.getStyleClass.add("h-strip")
+    HBox.setHgrow(strip, Priority.ALWAYS)
+
+    val label = Label(s"HARMONIC ${index + 1}")
+    label.getStyleClass.add("h-head")
+
+    val sRow = HarmonicsRow("SEMI:", -120, 120, 9.0, "%.1f")
+    val vRow = HarmonicsRow("VOL:", 0, 100)
+    val dRow = HarmonicsRow("DEL:", 0, 1000)
+
+    strip.getChildren.addAll(label, sRow.view, vRow.view, dRow.view)
+    HStrip(strip, label, sRow, vRow, dRow)
+
+  private def createVolListener(hs: HStrip): ChangeListener[Number] =
+    (_, _, newVal) =>
+      val dim = newVal.intValue == 0
+      hs.strip.setOpacity(if dim then 0.5 else 1.0)
+      hs.sRow.view.setDisable(dim)
+      hs.dRow.view.setDisable(dim)
+
+/** Single row in harmonics strip (`SEMI`/`VOL`/`DEL`). */
 class HarmonicsRow(
     labelTxt: String,
     min: Int,
@@ -123,7 +138,7 @@ class HarmonicsRow(
   label.getStyleClass.add("h-lbl")
 
   val input = JagNumericField(min, max, 0, scale, format)
-  input.setPrefWidth(34)
+  input.setPrefWidth(32)
 
   val barBox = VBox()
   barBox.getStyleClass.add("bar-box")
