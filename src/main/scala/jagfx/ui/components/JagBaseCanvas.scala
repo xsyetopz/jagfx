@@ -3,38 +3,56 @@ package jagfx.ui.components
 import javafx.scene.canvas.Canvas
 import javafx.scene.image._
 import javafx.scene.input._
+import javafx.animation.AnimationTimer
 import jagfx.utils.ColorUtils._
 import jagfx.utils.DrawingUtils._
 
-/** Base canvas with shared buffer management and drawing utilities. */
+private val MinFrameNanos = 16_666_666L
+
+/** Base canvas with throttled rendering and buffer management. */
 abstract class JagBaseCanvas extends Canvas:
   protected var image: WritableImage = null
   protected var buffer: Array[Int] = Array.empty
   protected val pixelFormat: PixelFormat[java.nio.IntBuffer] =
     PixelFormat.getIntArgbInstance
   protected var zoomLevel: Int = 1
-  protected var panOffset: Int = 0 // X offset in pixels for panning
+  protected var panOffset: Int = 0
+
+  @volatile private var dirty = false
+  @volatile private var resizePending = false
 
   setWidth(200)
   setHeight(100)
 
+  private val redrawTimer = new AnimationTimer:
+    private var lastFrame = 0L
+    def handle(now: Long): Unit =
+      if dirty && now - lastFrame >= MinFrameNanos then
+        dirty = false
+        lastFrame = now
+        performDraw()
+
+  redrawTimer.start()
+
+  /** Sets zoom level and resets pan. */
   def setZoom(level: Int): Unit =
     zoomLevel = level
     panOffset = 0
-    draw()
+    requestRedraw()
 
   def getPanOffset: Int = panOffset
 
-  protected def resizeBuffer(w: Int, h: Int): Unit =
-    if w > 0 && h > 0 then
-      image = new WritableImage(w, h)
-      buffer = new Array[Int](w * h)
-      draw()
+  /** Requests redraw on next animation frame. */
+  def requestRedraw(): Unit = dirty = true
 
-  def draw(): Unit =
+  @deprecated("use `requestRedraw()` instead", "0.2.0")
+  /** Requests redraw on next animation frame. */
+  def draw(): Unit = requestRedraw()
+
+  private def performDraw(): Unit =
     val w = getWidth.toInt
     val h = getHeight.toInt
-
+    if w <= 0 || h <= 0 then return
     if buffer.length != w * h then resizeBuffer(w, h)
     if buffer.isEmpty then return
 
@@ -46,6 +64,11 @@ abstract class JagBaseCanvas extends Canvas:
 
     val gc = getGraphicsContext2D
     gc.drawImage(image, 0, 0)
+
+  protected def resizeBuffer(w: Int, h: Int): Unit =
+    if w > 0 && h > 0 then
+      image = new WritableImage(w, h)
+      buffer = new Array[Int](w * h)
 
   /** Draw specific content for this canvas type. */
   protected def drawContent(buffer: Array[Int], w: Int, h: Int): Unit
@@ -65,30 +88,38 @@ abstract class JagBaseCanvas extends Canvas:
     val clamped = math.max(0, math.min(maxPanOffset, offset))
     if panOffset != clamped then
       panOffset = clamped
-      draw()
+      requestRedraw()
 
-  // scroll up = right, scroll down = left
-  setOnScroll((e: ScrollEvent) =>
+  setOnScroll { (e: ScrollEvent) =>
     if zoomLevel > 1 then
       val delta = if e.getDeltaY > 0 then 20 else -20
       setPan(panOffset + delta)
       e.consume()
-  )
+  }
 
   private var dragStartX: Double = 0
   private var dragStartPan: Int = 0
 
-  setOnMousePressed((e: MouseEvent) =>
+  setOnMousePressed { (e: MouseEvent) =>
     if zoomLevel > 1 then
       dragStartX = e.getX
       dragStartPan = panOffset
-  )
+  }
 
-  setOnMouseDragged((e: MouseEvent) =>
+  setOnMouseDragged { (e: MouseEvent) =>
     if zoomLevel > 1 then
       val delta = (dragStartX - e.getX).toInt
       setPan(dragStartPan + delta)
-  )
+  }
 
-  widthProperty.addListener((_, _, _) => draw())
-  heightProperty.addListener((_, _, _) => draw())
+  private def scheduleResize(): Unit =
+    if !resizePending then
+      resizePending = true
+      javafx.application.Platform.runLater { () =>
+        resizePending = false
+        resizeBuffer(getWidth.toInt, getHeight.toInt)
+        requestRedraw()
+      }
+
+  widthProperty.addListener((_, _, _) => scheduleResize())
+  heightProperty.addListener((_, _, _) => scheduleResize())
