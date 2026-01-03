@@ -5,7 +5,7 @@ import jagfx.model._
 import jagfx.Constants
 
 /** `ViewModel` for single `Tone`. */
-class ToneViewModel:
+class ToneViewModel extends IViewModel:
   val enabled = new SimpleBooleanProperty(false)
 
   // Envelopes
@@ -25,8 +25,8 @@ class ToneViewModel:
   // Transition Curve
   val filterEnvelope = new EnvelopeViewModel()
 
-  // Poles/Zeros
-  private var preservedFilter: Option[Filter] = None
+  // Poles/Zeros (editable filter parameters)
+  val filterViewModel = new FilterViewModel()
 
   // Properties
   val duration = new SimpleIntegerProperty(1000)
@@ -37,10 +37,7 @@ class ToneViewModel:
   // Harmonics (10 slots)
   val harmonics = Array.fill(Constants.MaxHarmonics)(new HarmonicViewModel())
 
-  private var listeners: List[() => Unit] = Nil
-
-  def addChangeListener(cb: () => Unit): Unit =
-    listeners = cb :: listeners
+  override protected def registerPropertyListeners(cb: () => Unit): Unit =
     Seq(
       pitch,
       volume,
@@ -51,12 +48,14 @@ class ToneViewModel:
       gateSilence,
       gateDuration,
       filterEnvelope
-    )
-      .foreach(_.addChangeListener(cb))
+    ).foreach(_.addChangeListener(cb))
+    filterViewModel.addChangeListener(cb)
     harmonics.foreach(_.addChangeListener(cb))
-
-  private def notifyListeners(): Unit =
-    listeners.foreach(_())
+    enabled.addListener((_, _, _) => cb())
+    duration.addListener((_, _, _) => cb())
+    startOffset.addListener((_, _, _) => cb())
+    reverbDelay.addListener((_, _, _) => cb())
+    reverbVolume.addListener((_, _, _) => cb())
 
   def load(toneOpt: Option[Tone]): Unit =
     toneOpt match
@@ -80,7 +79,7 @@ class ToneViewModel:
         t.gateSilence.foreach(gateSilence.load)
         t.gateDuration.foreach(gateDuration.load)
 
-        preservedFilter = t.filter
+        filterViewModel.load(t.filter)
         t.filter.flatMap(_.envelope).foreach(filterEnvelope.load)
 
         duration.set(t.duration)
@@ -106,7 +105,7 @@ class ToneViewModel:
     gateSilence.clear()
     gateDuration.clear()
     filterEnvelope.clear()
-    preservedFilter = None
+    filterViewModel.clear()
 
     duration.set(1000)
     startOffset.set(0)
@@ -120,7 +119,7 @@ class ToneViewModel:
       val activeHarmonics =
         harmonics.take(5).filter(_.active.get).map(_.toModel()).toVector
 
-      val filterModel = preservedFilter match
+      val filterModel = filterViewModel.toModel() match
         case Some(f) =>
           val env =
             if filterEnvelope.isEmpty then None
@@ -155,33 +154,3 @@ class ToneViewModel:
           filterModel
         )
       )
-
-class HarmonicViewModel:
-  val active = new SimpleBooleanProperty(false)
-  val semitone = new SimpleIntegerProperty(0)
-  val volume = new SimpleIntegerProperty(0)
-  val delay = new SimpleIntegerProperty(0)
-
-  private var listeners: List[() => Unit] = Nil
-
-  def addChangeListener(cb: () => Unit): Unit =
-    listeners = cb :: listeners
-    active.addListener((_, _, _) => cb())
-    semitone.addListener((_, _, _) => cb())
-    volume.addListener((_, _, _) => cb())
-    delay.addListener((_, _, _) => cb())
-
-  def load(h: Harmonic): Unit =
-    active.set(true)
-    semitone.set(h.semitone)
-    volume.set(h.volume)
-    delay.set(h.delay)
-
-  def clear(): Unit =
-    active.set(false)
-    semitone.set(0)
-    volume.set(0)
-    delay.set(0)
-
-  def toModel(): Harmonic =
-    Harmonic(volume.get, semitone.get, delay.get)
