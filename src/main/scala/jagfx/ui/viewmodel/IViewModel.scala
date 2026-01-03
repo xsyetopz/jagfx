@@ -1,21 +1,26 @@
 package jagfx.ui.viewmodel
 
-/** Base trait for ViewModels with change listener support. */
+import scala.collection.mutable.ArrayBuffer
+
+/** Base trait for `ViewModel`s with change listener support. */
 trait IViewModel:
-  private var listeners: List[() => Unit] = Nil
+  private val listeners = ArrayBuffer[() => Unit]()
 
   /** Register callback to be notified when this `ViewModel` changes. */
   def addChangeListener(cb: () => Unit): Unit =
-    listeners = cb :: listeners
+    listeners += cb
     registerPropertyListeners(cb)
 
   /** Unregister callback to be notified when this `ViewModel` changes. */
   def removeChangeListener(cb: () => Unit): Unit =
-    listeners = listeners.filter(_ != cb)
+    listeners -= cb
 
   /** Override to wire up property-specific listeners. */
   protected def registerPropertyListeners(cb: () => Unit): Unit = ()
 
   /** Notify all registered listeners of change. */
   protected def notifyListeners(): Unit =
-    listeners.foreach(_())
+    var i = 0
+    while i < listeners.length do
+      listeners(i)()
+      i += 1
