@@ -52,6 +52,7 @@ class HeaderController(viewModel: SynthViewModel) extends IController[GridPane]:
   private val loopGroup = createLoopGroup()
   private val fileGroup = createFileGroup()
   private val btn16 = create16BitButton()
+  private val btnInit = createInitButton()
 
   private val leftGroup = HBox(2)
   leftGroup.setAlignment(Pos.CENTER_LEFT)
@@ -91,7 +92,7 @@ class HeaderController(viewModel: SynthViewModel) extends IController[GridPane]:
   val rightSpacer = new Region()
   HBox.setHgrow(rightSpacer, Priority.ALWAYS)
 
-  rightGroup.getChildren.addAll(btn16, rightSpacer, fileGroup)
+  rightGroup.getChildren.addAll(btn16, btnInit, rightSpacer, fileGroup)
 
   view.add(leftGroup, 0, 0)
   view.add(centerGroup, 1, 0)
@@ -183,9 +184,6 @@ class HeaderController(viewModel: SynthViewModel) extends IController[GridPane]:
     group.setStyle("-fx-border-color: transparent;")
     group.setAlignment(Pos.CENTER)
 
-    val btnInit = JagButton()
-    btnInit.setGraphic(IconUtils.icon("mdi2f-file-plus"))
-
     val btnOpen = JagButton()
     btnOpen.setGraphic(IconUtils.icon("mdi2f-folder-open"))
     val btnSave = JagButton()
@@ -193,13 +191,18 @@ class HeaderController(viewModel: SynthViewModel) extends IController[GridPane]:
     val btnExport = JagButton()
     btnExport.setGraphic(IconUtils.icon("mdi2e-export-variant"))
 
-    btnInit.setOnAction(_ => viewModel.reset())
     btnOpen.setOnAction(_ => openFile())
     btnSave.setOnAction(_ => saveFile())
     btnExport.setOnAction(_ => saveAsOrExport())
 
-    group.getChildren.addAll(btnInit, btnOpen, btnSave, btnExport)
+    group.getChildren.addAll(btnOpen, btnSave, btnExport)
     group
+
+  private def createInitButton(): JagButton =
+    val btn = JagButton()
+    btn.setGraphic(IconUtils.icon("mdi2f-file-plus"))
+    btn.setOnAction(_ => viewModel.reset())
+    btn
 
   private def create16BitButton(): JagButton =
     val btn16 = JagButton("16-BIT")
