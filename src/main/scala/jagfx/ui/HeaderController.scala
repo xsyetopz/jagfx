@@ -13,7 +13,7 @@ import javax.sound.sampled._
 import scala.util.Using
 import java.nio.file.Files
 import jagfx.Constants
-import jagfx.utils.{AudioUtils, IconUtils}
+import jagfx.utils._
 import javafx.geometry.Pos
 
 class HeaderController(viewModel: SynthViewModel):
@@ -64,6 +64,7 @@ class HeaderController(viewModel: SynthViewModel):
   private val lenPosGroup = HBox(4)
   lenPosGroup.getStyleClass.add("h-grp")
   val lenField = JagNumericField(0, Int16.Range, 1200)
+  lenField.valueProperty.bindBidirectional(viewModel.totalDurationProperty)
   val posField = JagNumericField(0, Int16.Range, 0)
   lenPosGroup.getChildren.addAll(Label("LEN"), lenField, Label("POS"), posField)
 
@@ -154,6 +155,7 @@ class HeaderController(viewModel: SynthViewModel):
       SynthReader.readFromPath(file.toPath) match
         case Right(synth) =>
           viewModel.load(synth)
+          viewModel.setCurrentFilePath(file.getAbsolutePath)
           currentFile = Some(file)
         case Left(err) => scribe.error(s"Failed to load: ${err.message}")
 
