@@ -4,6 +4,7 @@ import javafx.beans.property._
 import javafx.collections._
 import jagfx.model._
 import jagfx.Constants
+import scala.jdk.CollectionConverters._
 
 enum RackMode:
   case Main, Filter, Both
@@ -28,6 +29,21 @@ class SynthViewModel:
   def setCurrentFilePath(path: String): Unit = currentFilePath.set(path)
 
   for _ <- 0 until Constants.MaxTones do tones.add(new ToneViewModel())
+
+  initDefault()
+
+  def initDefault(): Unit =
+    tones.asScala.foreach(_.clear())
+
+    val t1 = tones.get(0)
+    t1.enabled.set(true)
+    t1.duration.set(1000)
+    t1.volume.form.set(WaveForm.Square)
+    val h1 = t1.harmonics(0)
+    h1.active.set(true)
+    h1.volume.set(100)
+
+    currentFilePath.set("Untitled.synth")
 
   def activeToneIndexProperty: IntegerProperty = activeToneIndex
   def getActiveToneIndex: Int = activeToneIndex.get

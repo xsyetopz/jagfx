@@ -66,6 +66,14 @@ class FooterController(viewModel: SynthViewModel):
         viewModel.setActiveToneIndex(i)
       )
       if i == 0 then btn.setActive(true)
+
+      val tone = viewModel.getTones.get(i)
+      val updateDim = (enabled: Boolean) =>
+        btn.setOpacity(if enabled then 1.0 else 0.5)
+
+      tone.enabled.addListener((_, _, enabled) => updateDim(enabled))
+      updateDim(tone.enabled.get)
+
       buttons(i) = btn
       grid.add(btn, i % 2, i / 2)
 
