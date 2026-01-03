@@ -7,6 +7,8 @@ import javafx.scene.control._
 import javafx.geometry.Pos
 import jagfx.ui.viewmodel.EnvelopeViewModel
 import jagfx.utils.IconUtils
+import jagfx.model.WaveForm
+import javafx.beans.value.ChangeListener
 
 class JagCellPane(title: String) extends StackPane:
   private val collapsed = SimpleBooleanProperty(false)
@@ -136,7 +138,21 @@ class JagCellPane(title: String) extends StackPane:
     else getStyleClass.remove("selected")
   )
 
+  private var currentVm: Option[EnvelopeViewModel] = None
+
+  private val formListener: ChangeListener[WaveForm] = (_, _, form) =>
+    updateDimming(form)
+
+  private def updateDimming(form: WaveForm): Unit =
+    container.setOpacity(if form == WaveForm.Off then 0.5 else 1.0)
+
   def setViewModel(vm: EnvelopeViewModel): Unit =
+    currentVm.foreach(_.form.removeListener(formListener))
+    currentVm = Some(vm)
+
+    vm.form.addListener(formListener)
+    updateDimming(vm.form.get)
+
     canvas.setViewModel(vm)
 
   def getCanvas: JagEnvelopeCanvas = canvas
