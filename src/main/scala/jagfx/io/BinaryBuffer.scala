@@ -39,6 +39,11 @@ class BinaryBuffer(val data: Array[Byte]):
     pos += 2
     ((data(pos - 2) & 0xff) << 8) + (data(pos - 1) & 0xff)
 
+  /** Reads unsigned 16-bit little-endian integer, advances position by `2`. */
+  def readU16LE(): Int =
+    pos += 2
+    (data(pos - 2) & 0xff) + ((data(pos - 1) & 0xff) << 8)
+
   /** Reads signed 16-bit big-endian integer, advances position by `2`. */
   def readS16BE(): Int =
     import Constants._
