@@ -1,10 +1,9 @@
-package jagfx.ui.components
+package jagfx.ui.components.canvas
 
 import jagfx.ui.viewmodel.FilterViewModel
 import jagfx.utils.ColorUtils._
 import jagfx.utils.DrawingUtils._
 import jagfx.utils.MathUtils
-import jagfx.utils.MathUtils.{TwoPi, clamp, distance, linearToDb}
 import jagfx.Constants.Int16
 
 /** Canvas rendering frequency response curve from filter poles/zeros. */
@@ -55,9 +54,9 @@ class JagFrequencyResponseCanvas extends JagBaseCanvas:
     for x <- 0 until w do
       val freq = x.toDouble / w
       val response = computeFrequencyResponse(vm, freq)
-      val dB = clamp(linearToDb(response), MinDb, MaxDb)
+      val dB = MathUtils.clamp(MathUtils.linearToDb(response), MinDb, MaxDb)
       val y = decibelsToY(dB, h)
-      points(x) = clamp(y, 0, h - 1)
+      points(x) = MathUtils.clamp(y, 0, h - 1)
     points
 
   private def computeFrequencyResponse(
@@ -77,11 +76,11 @@ class JagFrequencyResponseCanvas extends JagBaseCanvas:
     var contrib = 1.0
     val (eReal, eImag) = (math.cos(omega), math.sin(omega))
     for i <- 0 until vm.pairCount0.get do
-      val phase = vm.pairPhase(0)(i)(0).get / Int16.Range * TwoPi
+      val phase = vm.pairPhase(0)(i)(0).get / Int16.Range * MathUtils.TwoPi
       val mag = vm.pairMagnitude(0)(i)(0).get / Int16.Range
       val zReal = mag * math.cos(phase)
       val zImag = mag * math.sin(phase)
-      contrib *= distance(eReal, eImag, zReal, zImag)
+      contrib *= MathUtils.distance(eReal, eImag, zReal, zImag)
     contrib
 
   private def computePoleContribution(
@@ -91,11 +90,14 @@ class JagFrequencyResponseCanvas extends JagBaseCanvas:
     var contrib = 1.0
     val (eReal, eImag) = (math.cos(omega), math.sin(omega))
     for i <- 0 until vm.pairCount1.get do
-      val phase = vm.pairPhase(1)(i)(0).get / Int16.Range * TwoPi
+      val phase = vm.pairPhase(1)(i)(0).get / Int16.Range * MathUtils.TwoPi
       val mag = vm.pairMagnitude(1)(i)(0).get / Int16.Range
       val pReal = mag * math.cos(phase)
       val pImag = mag * math.sin(phase)
-      contrib *= math.max(MinGain, distance(eReal, eImag, pReal, pImag))
+      contrib *= math.max(
+        MinGain,
+        MathUtils.distance(eReal, eImag, pReal, pImag)
+      )
     contrib
 
   private def decibelsToY(dB: Double, h: Int): Int =

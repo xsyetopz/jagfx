@@ -1,4 +1,4 @@
-package jagfx.ui.components
+package jagfx.ui.components.pane
 
 import javafx.beans.property._
 import javafx.scene.layout._
@@ -9,6 +9,8 @@ import jagfx.ui.viewmodel.EnvelopeViewModel
 import jagfx.utils.IconUtils
 import jagfx.model.WaveForm
 import javafx.beans.value.ChangeListener
+import jagfx.ui.components.canvas._
+import jagfx.ui.components.button.JagButton
 
 class JagCellPane(title: String) extends StackPane:
   private val collapsed = SimpleBooleanProperty(false)

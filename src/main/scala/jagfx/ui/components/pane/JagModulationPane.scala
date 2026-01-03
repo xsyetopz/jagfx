@@ -1,4 +1,4 @@
-package jagfx.ui.components
+package jagfx.ui.components.pane
 
 import javafx.scene.layout._
 import javafx.scene.control.Label
@@ -8,14 +8,9 @@ import jagfx.ui.viewmodel.ToneViewModel
 /** Grouped container for modulation controls (`Vibrato` + `Tremolo`). Displays
   * `4` mini envelope cells in a 2x2 grid.
   */
-class JagModulationPane extends VBox:
+class JagModulationPane extends JagBasePane("MODULATION"):
   getStyleClass.add("modulation-pane")
   setSpacing(2)
-
-  private val header = Label("MODULATION")
-  header.getStyleClass.add("panel-head")
-  header.setMaxWidth(Double.MaxValue)
-  header.setAlignment(Pos.CENTER)
 
   private val grid = GridPane()
   grid.setHgap(2)
@@ -56,7 +51,7 @@ class JagModulationPane extends VBox:
   grid.add(tremoloRateCell, 0, 1)
   grid.add(tremoloDepthCell, 1, 1)
 
-  getChildren.addAll(header, grid)
+  getChildren.add(grid)
 
   def bind(tone: ToneViewModel): Unit =
     vibratoRateCell.setViewModel(tone.vibratoRate)

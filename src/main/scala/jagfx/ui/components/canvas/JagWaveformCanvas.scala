@@ -1,4 +1,4 @@
-package jagfx.ui.components
+package jagfx.ui.components.canvas
 
 import jagfx.synth.AudioBuffer
 import jagfx.utils.ColorUtils._

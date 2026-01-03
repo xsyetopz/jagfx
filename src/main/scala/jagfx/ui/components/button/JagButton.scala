@@ -1,4 +1,4 @@
-package jagfx.ui.components
+package jagfx.ui.components.button
 
 import javafx.beans.property._
 import javafx.scene.control.Button

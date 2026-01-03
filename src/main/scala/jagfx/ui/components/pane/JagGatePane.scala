@@ -1,21 +1,16 @@
-package jagfx.ui.components
+package jagfx.ui.components.pane
 
 import javafx.scene.layout._
 import javafx.scene.control.Label
 import javafx.geometry.Pos
 import jagfx.ui.viewmodel.ToneViewModel
 
-/** Grouped container for Gate controls (Silence + Duration). Displays 2 mini
-  * envelope cells in a horizontal strip.
+/** Grouped container for `Gate` controls (`Silence` + `Duration`). Displays 2
+  * mini envelope cells in horizontal strip.
   */
-class JagGatePane extends VBox:
+class JagGatePane extends JagBasePane("GATE"):
   getStyleClass.add("gate-pane")
   setSpacing(2)
-
-  private val header = Label("GATE")
-  header.getStyleClass.add("panel-head")
-  header.setMaxWidth(Double.MaxValue)
-  header.setAlignment(Pos.CENTER)
 
   private val row = HBox(2)
   row.setAlignment(Pos.CENTER)
@@ -33,7 +28,7 @@ class JagGatePane extends VBox:
 
   row.getChildren.addAll(silenceCell, durationCell)
 
-  getChildren.addAll(header, row)
+  getChildren.add(row)
 
   def bind(tone: ToneViewModel): Unit =
     silenceCell.setViewModel(tone.gateSilence)

@@ -4,7 +4,9 @@ import javafx.scene.layout._
 import javafx.scene.control.Label
 import javafx.geometry.Pos
 import jagfx.ui.viewmodel.FilterViewModel
-import jagfx.ui.components._
+import jagfx.ui.components.field._
+import jagfx.ui.components.group._
+import jagfx.ui.components.slider._
 import jagfx.Constants.Int16
 
 /** Inspector panel for filter parameters. */

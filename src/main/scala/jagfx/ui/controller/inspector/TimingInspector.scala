@@ -4,7 +4,7 @@ import javafx.scene.layout._
 import javafx.scene.control.Label
 import javafx.geometry.Pos
 import jagfx.ui.viewmodel.ToneViewModel
-import jagfx.ui.components._
+import jagfx.ui.components.field._
 import jagfx.Constants.Int16
 
 /** Inspector panel for tone timing parameters (`Duration`, `StartOffset`). */

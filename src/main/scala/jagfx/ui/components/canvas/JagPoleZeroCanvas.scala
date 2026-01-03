@@ -1,4 +1,4 @@
-package jagfx.ui.components
+package jagfx.ui.components.canvas
 
 import jagfx.ui.viewmodel.FilterViewModel
 import jagfx.utils.ColorUtils._

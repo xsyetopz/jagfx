@@ -1,4 +1,4 @@
-package jagfx.ui.components
+package jagfx.ui.components.field
 
 import javafx.beans.property._
 import javafx.scene.control.TextField
@@ -11,12 +11,7 @@ class JagNumericField(
     initial: Int,
     scale: Double = 1.0,
     format: String = "%.0f"
-) extends TextField:
-  private val value = SimpleIntegerProperty(initial)
-
-  def valueProperty: IntegerProperty = value
-  def getValue: Int = value.get
-  def setValue(v: Int): Unit = value.set(math.max(min, math.min(max, v)))
+) extends JagBaseField(initial):
 
   getStyleClass.add("jag-input")
   setAlignment(Pos.CENTER_RIGHT)

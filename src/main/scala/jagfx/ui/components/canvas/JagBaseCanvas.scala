@@ -1,4 +1,4 @@
-package jagfx.ui.components
+package jagfx.ui.components.canvas
 
 import javafx.scene.canvas.Canvas
 import javafx.scene.image._

@@ -4,7 +4,8 @@ import javafx.scene.layout._
 import javafx.scene.control.Label
 import javafx.geometry.Pos
 import jagfx.ui.viewmodel.{SynthViewModel, RackMode}
-import jagfx.ui.components._
+import jagfx.ui.components.group._
+import jagfx.ui.components.button._
 
 /** Mode selection panel (`MAIN`/`FILTER`/`BOTH`). */
 object ModePanel:

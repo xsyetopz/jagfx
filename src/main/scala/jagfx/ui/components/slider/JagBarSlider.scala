@@ -1,19 +1,15 @@
-package jagfx.ui.components
+package jagfx.ui.components.slider
 
 import javafx.beans.property._
 import javafx.scene.layout._
 import javafx.scene.shape.Rectangle
 import javafx.geometry.Pos
 import javafx.scene.control.Label
+import jagfx.ui.components.field.JagNumericField
 
 /** Horizontal bar slider with numeric input. */
 class JagBarSlider(min: Int, max: Int, initial: Int, labelText: String = "")
-    extends VBox:
-  private val value = SimpleIntegerProperty(initial)
-
-  def valueProperty: IntegerProperty = value
-  def getValue: Int = value.get
-  def setValue(v: Int): Unit = value.set(math.max(min, math.min(max, v)))
+    extends JagBaseSlider(min, max, initial):
 
   getStyleClass.add("jag-bar-slider")
   setSpacing(2)

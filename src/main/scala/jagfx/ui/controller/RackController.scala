@@ -2,7 +2,12 @@ package jagfx.ui.controller
 
 import javafx.scene.layout._
 import jagfx.ui.viewmodel._
-import jagfx.ui.components._
+import jagfx.ui.components.canvas._
+import jagfx.ui.components.pane._
+import jagfx.ui.components.slider._
+import jagfx.ui.components.field._
+import jagfx.ui.components.button._
+import jagfx.ui.components.group._
 import jagfx.synth.SynthesisExecutor
 import javafx.beans.value.ChangeListener
 import jagfx.ui.BindingManager

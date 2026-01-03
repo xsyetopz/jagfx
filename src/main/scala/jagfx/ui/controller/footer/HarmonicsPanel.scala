@@ -7,7 +7,9 @@ import javafx.beans.property.IntegerProperty
 import javafx.beans.value.ChangeListener
 import javafx.beans.binding.Bindings
 import jagfx.ui.viewmodel.SynthViewModel
-import jagfx.ui.components._
+import jagfx.ui.components.slider._
+import jagfx.ui.components.field._
+import jagfx.ui.components.button._
 
 /** Harmonics panel with H1-5/H6-10 bank switcher. */
 object HarmonicsPanel:
@@ -53,7 +55,7 @@ object HarmonicsPanel:
       val label = Label(s"H${i + 1}")
       label.getStyleClass.add("h-head")
 
-      val sRow = HarmonicsRow("SEMI", -120, 120, 9.0, "%.1f")
+      val sRow = HarmonicsRow("PIT", -120, 120, 9.0, "%.1f")
       val vRow = HarmonicsRow("VOL", 0, 100)
       val dRow = HarmonicsRow("DEL", 0, 1000)
 
@@ -103,7 +105,7 @@ object HarmonicsPanel:
     panel.getChildren.addAll(headRow, grid)
     panel
 
-/** Single row in harmonics strip (`SEMI`/`VOL`/`DEL`). */
+/** Single row in harmonics strip (`PIT`/`VOL`/`DEL`). */
 class HarmonicsRow(
     labelTxt: String,
     min: Int,

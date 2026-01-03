@@ -5,7 +5,7 @@ import javafx.scene.control.Label
 import javafx.geometry.Pos
 import jagfx.ui.viewmodel._
 import jagfx.ui.controller.IController
-import jagfx.ui.components.JagModulationPane
+import jagfx.ui.components.pane.JagModulationPane
 
 /** Inspector panel for editing envelope or filter parameters. */
 class InspectorController(viewModel: SynthViewModel) extends IController[VBox]:
@@ -48,7 +48,7 @@ class InspectorController(viewModel: SynthViewModel) extends IController[VBox]:
   middlePane.getChildren.addAll(helpHeader, helpDesc, helpControls)
   view.getChildren.addAll(topPane, middlePane, modulationPane)
 
-  // bind modu pane when tone changes
+  // bind mod pane when tone changes
   viewModel.activeToneIndexProperty.addListener((_, _, _) =>
     modulationPane.bind(viewModel.getActiveTone)
   )

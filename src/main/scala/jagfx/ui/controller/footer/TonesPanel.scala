@@ -4,7 +4,8 @@ import javafx.scene.layout._
 import javafx.scene.control.Label
 import javafx.geometry.Pos
 import jagfx.ui.viewmodel.SynthViewModel
-import jagfx.ui.components._
+import jagfx.ui.components.button._
+import jagfx.ui.components.field._
 import jagfx.utils.IconUtils
 import jagfx.Constants
 
