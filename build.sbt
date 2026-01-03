@@ -19,7 +19,7 @@ val munitVersion = "1.0.4"
 
 // --- Setting Keys ---
 val isFatJar =
-  settingKey[Boolean]("Flag to include all platform natives in the build")
+  settingKey[Boolean]("Flag to include all platform natives in build")
 
 // --- Project Definition ---
 lazy val root = project
