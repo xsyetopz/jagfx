@@ -60,13 +60,13 @@ class BinaryBuffer(val data: Array[Byte]):
       ((data(pos - 2) & 0xff) << 8) +
       (data(pos - 1) & 0xff)
 
-  /** Reads signed variable-length smart integer (`1` or `2` byte(s)). */
+  /** Reads signed variable-length smart integer (`1` or `2` bytes). */
   def readSmart(): Int =
     val value = data(pos) & 0xff
     if value < Smart.Threshold then readU8() - Smart.SignedOffset
     else readU16BE() - Smart.SignedBaseOffset
 
-  /** Reads unsigned variable-length smart integer (`1` or `2` byte(s)). */
+  /** Reads unsigned variable-length smart integer (`1` or `2` bytes). */
   def readSmartUnsigned(): Int =
     import Constants._
     val value = data(pos) & 0xff
@@ -106,14 +106,14 @@ class BinaryBuffer(val data: Array[Byte]):
     data(pos + 1) = value.toByte
     pos += 2
 
-  /** Writes unsigned variable-length smart integer (`1` or `2` byte(s)). */
+  /** Writes unsigned variable-length smart integer (`1` or `2` bytes). */
   def writeSmartUnsigned(value: Int): Unit =
     if value < Smart.Threshold then writeU8(value)
     else
       writeU8((value >> 8) + Smart.Threshold)
       writeU8(value & 0xff)
 
-  /** Writes signed variable-length smart integer (`1` or `2` byte(s)). */
+  /** Writes signed variable-length smart integer (`1` or `2` bytes). */
   def writeSmart(value: Int): Unit =
     val adjusted = value + Smart.SignedOffset
     if adjusted >= 0 && adjusted < Smart.Threshold then writeU8(adjusted)

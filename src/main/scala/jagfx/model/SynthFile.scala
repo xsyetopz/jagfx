@@ -14,7 +14,7 @@ case class LoopParams(begin: Int, end: Int):
 /** Top-level `.synth` file representation containing up to `10` tones.
   *
   * @param tones
-  *   Vector of optional tones (indices `0`-`9`)
+  *   Vector of optional tones (indices `0-9`)
   * @param loop
   *   Loop region parameters
   */

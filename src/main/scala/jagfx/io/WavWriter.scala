@@ -12,7 +12,7 @@ object WavWriter:
     * @param samples
     *   Raw PCM byte data (8-bit or 16-bit LE)
     * @param bitsPerSample
-    *   Bits per sample (8 or 16)
+    *   Bits per sample (`8` or `16`)
     */
   def write(samples: Array[Byte], bitsPerSample: Int = 8): Array[Byte] =
     val dataSize = samples.length

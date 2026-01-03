@@ -24,7 +24,7 @@ package jagfx.model
   * @param reverbDelay
   *   Reverb delay in milliseconds
   * @param reverbVolume
-  *   Reverb mix level `0`-`100`
+  *   Reverb mix level `0-100`
   * @param duration
   *   Total tone length in milliseconds
   * @param start
