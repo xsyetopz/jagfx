@@ -175,3 +175,23 @@
     -fx-text-fill: $text-dim;
     -fx-wrap-text: true;
 }
+
+// Grouped panes for modulation and gate controls
+.modulation-pane,
+.gate-pane {
+    -fx-background-color: $bg-panel;
+    -fx-border-color: $border-dim;
+    -fx-border-radius: 4px;
+    -fx-background-radius: 4px;
+    -fx-padding: 2px;
+
+    .panel-head {
+        -fx-font-size: 9px;
+        -fx-padding: 2px 4px;
+    }
+}
+
+.timing-inspector {
+    -fx-border-color: $border-dim transparent transparent transparent;
+    -fx-padding: 8px 0 0 0;
+}

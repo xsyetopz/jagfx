@@ -5,6 +5,7 @@ import javafx.scene.control.Label
 import javafx.geometry.Pos
 import jagfx.ui.viewmodel._
 import jagfx.ui.controller.IController
+import jagfx.ui.components.JagModulationPane
 
 /** Inspector panel for editing envelope or filter parameters. */
 class InspectorController(viewModel: SynthViewModel) extends IController[VBox]:
@@ -15,6 +16,7 @@ class InspectorController(viewModel: SynthViewModel) extends IController[VBox]:
   private val envInspector = EnvelopeInspector()
   private val fltInspector = FilterInspector()
   private val timingInspector = TimingInspector()
+  private val modulationPane = JagModulationPane()
 
   private val helpHeader = Label("INFO")
   helpHeader.getStyleClass.add("help-header")
@@ -30,9 +32,9 @@ class InspectorController(viewModel: SynthViewModel) extends IController[VBox]:
   private val topPane = VBox(8)
   topPane.setAlignment(Pos.TOP_LEFT)
 
-  private val bottomPane = VBox(2)
-  bottomPane.setAlignment(Pos.BOTTOM_LEFT)
-  VBox.setVgrow(bottomPane, Priority.ALWAYS)
+  private val middlePane = VBox(2)
+  middlePane.setAlignment(Pos.BOTTOM_LEFT)
+  VBox.setVgrow(middlePane, Priority.ALWAYS)
 
   // add inspectors to top pane, but hide them initially
   topPane.getChildren.addAll(envInspector, fltInspector, timingInspector)
@@ -43,8 +45,14 @@ class InspectorController(viewModel: SynthViewModel) extends IController[VBox]:
   timingInspector.setVisible(false)
   timingInspector.setManaged(false)
 
-  bottomPane.getChildren.addAll(helpHeader, helpDesc, helpControls)
-  view.getChildren.addAll(topPane, bottomPane)
+  middlePane.getChildren.addAll(helpHeader, helpDesc, helpControls)
+  view.getChildren.addAll(topPane, middlePane, modulationPane)
+
+  // bind modu pane when tone changes
+  viewModel.activeToneIndexProperty.addListener((_, _, _) =>
+    modulationPane.bind(viewModel.getActiveTone)
+  )
+  modulationPane.bind(viewModel.getActiveTone)
 
   hide()
 
