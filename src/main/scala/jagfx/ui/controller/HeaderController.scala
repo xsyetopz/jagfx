@@ -42,7 +42,7 @@ class HeaderController(viewModel: SynthViewModel) extends IController[GridPane]:
 
   private val col3 = ColumnConstraints()
   col3.setPercentWidth(25)
-  col3.setHalignment(HPos.RIGHT)
+  col3.setHalignment(HPos.CENTER)
 
   view.getColumnConstraints.addAll(col1, col2, col3)
 
@@ -51,6 +51,7 @@ class HeaderController(viewModel: SynthViewModel) extends IController[GridPane]:
   private val lenPosGroup = createLenPosGroup()
   private val loopGroup = createLoopGroup()
   private val fileGroup = createFileGroup()
+  private val btn16 = create16BitButton()
 
   private val leftGroup = HBox(2)
   leftGroup.setAlignment(Pos.CENTER_LEFT)
@@ -84,7 +85,13 @@ class HeaderController(viewModel: SynthViewModel) extends IController[GridPane]:
   private val rightGroup = HBox(2)
   rightGroup.setAlignment(Pos.CENTER_RIGHT)
   rightGroup.setPickOnBounds(false)
-  rightGroup.getChildren.add(fileGroup)
+  rightGroup.setMaxWidth(Double.MaxValue)
+
+  // spacer to push 'fileGroup' to right
+  val rightSpacer = new Region()
+  HBox.setHgrow(rightSpacer, Priority.ALWAYS)
+
+  rightGroup.getChildren.addAll(btn16, rightSpacer, fileGroup)
 
   view.add(leftGroup, 0, 0)
   view.add(centerGroup, 1, 0)
@@ -179,15 +186,6 @@ class HeaderController(viewModel: SynthViewModel) extends IController[GridPane]:
     val btnInit = JagButton("")
     btnInit.setGraphic(IconUtils.icon("mdi2f-file-plus"))
 
-    val btn16 = JagButton("16-BIT")
-    btn16.setOnAction(_ =>
-      UserPreferences.export16Bit.set(!UserPreferences.export16Bit.get)
-    )
-    UserPreferences.export16Bit.addListener((_, _, enabled) =>
-      btn16.setActive(enabled)
-    )
-    btn16.setActive(UserPreferences.export16Bit.get)
-
     val btnOpen = JagButton("")
     btnOpen.setGraphic(IconUtils.icon("mdi2f-folder-open"))
     val btnSave = JagButton("")
@@ -200,8 +198,19 @@ class HeaderController(viewModel: SynthViewModel) extends IController[GridPane]:
     btnSave.setOnAction(_ => saveFile())
     btnExport.setOnAction(_ => saveAsOrExport())
 
-    group.getChildren.addAll(btn16, btnInit, btnOpen, btnSave, btnExport)
+    group.getChildren.addAll(btnInit, btnOpen, btnSave, btnExport)
     group
+
+  private def create16BitButton(): JagButton =
+    val btn16 = JagButton("16-BIT")
+    btn16.setOnAction(_ =>
+      UserPreferences.export16Bit.set(!UserPreferences.export16Bit.get)
+    )
+    UserPreferences.export16Bit.addListener((_, _, enabled) =>
+      btn16.setActive(enabled)
+    )
+    btn16.setActive(UserPreferences.export16Bit.get)
+    btn16
 
   private def openFile(): Unit =
     val chooser = new FileChooser()
