@@ -5,6 +5,7 @@ import jagfx.ui.viewmodel._
 import jagfx.ui.components._
 import jagfx.synth.SynthesisExecutor
 import javafx.beans.value.ChangeListener
+import jagfx.ui.BindingManager
 
 class RackController(viewModel: SynthViewModel, inspector: InspectorController)
     extends IController[GridPane]:
@@ -135,17 +136,20 @@ class RackController(viewModel: SynthViewModel, inspector: InspectorController)
     cells(idx) = cell
   }
 
-  viewModel.rackMode.addListener((_, _, _) => buildGrid())
-  viewModel.selectedCellIndex.addListener((_, _, _) => updateSelection())
+  private val bindingManager = BindingManager()
+
+  bindingManager.listen(viewModel.rackMode)(_ => buildGrid())
+  bindingManager.listen(viewModel.selectedCellIndex)(_ => updateSelection())
+
   buildGrid()
 
   def bind(): Unit =
     bindActiveTone()
 
-  private val activeToneChangeListener: ChangeListener[Number] = (_, _, _) =>
+  bindingManager.listen(viewModel.activeToneIndexProperty)(_ =>
     bindActiveTone()
-  viewModel.activeToneIndexProperty.addListener(activeToneChangeListener)
-  viewModel.fileLoadedProperty.addListener((_, _, _) => bindActiveTone())
+  )
+  bindingManager.listen(viewModel.fileLoadedProperty)(_ => bindActiveTone())
 
   for i <- 0 until viewModel.getTones.size do
     viewModel.getTones.get(i).addChangeListener(() => updateOutputWaveform())
@@ -213,7 +217,7 @@ class RackController(viewModel: SynthViewModel, inspector: InspectorController)
       cellDef.cellType match
         case CellType.Envelope(getter, _) =>
           cells(idx).setViewModel(getter(tone))
-        case _ => // do nothing for other types
+        case _ => // do nothing
 
     poleZeroCanvas.setViewModel(tone.filterViewModel)
     freqResponseCanvas.setViewModel(tone.filterViewModel)
