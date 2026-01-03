@@ -30,7 +30,8 @@ lazy val root = project
     maintainer := "xsyetopz",
 
     // Dependencies
-    libraryDependencies ++= javaFxDependencies,
+    libraryDependencies ++= currentJavaFxDeps,
+    Universal / libraryDependencies ++= allJavaFxDeps,
     libraryDependencies ++= Seq(
       "ch.qos.logback" % "logback-classic" % logbackVersion,
       "com.outr" %% "scribe-slf4j" % scribeVersion,
@@ -50,18 +51,30 @@ lazy val root = project
 addCommandAlias("cli", "runMain jagfx.JagFXCli")
 addCommandAlias("dist", "universal:packageBin")
 
-// --- Helper Functions & Tasks ---
-lazy val javaFxDependencies = {
-  val modules =
-    Seq("base", "controls", "fxml", "graphics", "media", "swing", "web")
-  val platforms = Seq("win", "linux", "mac", "mac-aarch64")
+// --- JavaFX Dependency Logic ---
+lazy val javaFxModules =
+  Seq("base", "controls", "fxml", "graphics", "media", "swing", "web")
 
-  for {
-    m <- modules
-    p <- platforms
-  } yield "org.openjfx" % s"javafx-$m" % javaFxVersion classifier p
+lazy val osClassifier = {
+  val osName = System.getProperty("os.name").toLowerCase
+  val osArch = System.getProperty("os.arch").toLowerCase
+  if (osName.contains("linux")) "linux"
+  else if (osName.contains("mac")) {
+    if (osArch == "aarch64") "mac-aarch64" else "mac"
+  } else if (osName.contains("windows")) "win"
+  else throw new Exception(s"Unknown OS: $osName")
 }
 
+lazy val currentJavaFxDeps = javaFxModules.map(m =>
+  "org.openjfx" % s"javafx-$m" % javaFxVersion classifier osClassifier
+)
+
+lazy val allJavaFxDeps = for {
+  m <- javaFxModules
+  p <- Seq("win", "linux", "mac", "mac-aarch64")
+} yield "org.openjfx" % s"javafx-$m" % javaFxVersion classifier p
+
+// --- SCSS Compilation ---
 lazy val scss = taskKey[Unit]("Compile SCSS to CSS")
 scss := {
   def isToolAvailable(tool: String): Boolean =
