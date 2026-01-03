@@ -44,6 +44,8 @@ class InspectorController(viewModel: SynthViewModel) extends IController[VBox]:
   bottomPane.getChildren.addAll(helpHeader, helpDesc, helpControls)
   view.getChildren.addAll(topPane, bottomPane)
 
+  hide()
+
   def bind(envelope: EnvelopeViewModel, title: String, desc: String): Unit =
     show(envInspector)
     envInspector.bind(envelope)
