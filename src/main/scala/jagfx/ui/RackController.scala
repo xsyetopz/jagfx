@@ -6,8 +6,9 @@ import jagfx.ui.components._
 import jagfx.synth.ToneSynthesizer
 import javafx.beans.value.ChangeListener
 
-class RackController(viewModel: SynthViewModel, inspector: InspectorController):
-  private val view = GridPane()
+class RackController(viewModel: SynthViewModel, inspector: InspectorController)
+    extends IController[GridPane]:
+  protected val view = GridPane()
   view.getStyleClass.add("rack")
   view.setHgap(1)
   view.setVgap(1)
@@ -64,8 +65,6 @@ class RackController(viewModel: SynthViewModel, inspector: InspectorController):
   viewModel.rackMode.addListener((_, _, _) => buildGrid())
   viewModel.selectedCellIndex.addListener((_, _, _) => updateSelection())
   buildGrid()
-
-  def getView: GridPane = view
 
   def bind(): Unit =
     bindActiveTone()
@@ -136,9 +135,13 @@ class RackController(viewModel: SynthViewModel, inspector: InspectorController):
       case _  => None
 
   private def bindInspector(idx: Int): Unit =
-    envelopeForCell(viewModel.getActiveTone, idx) match
-      case Some(env) => inspector.bind(env)
-      case None      => inspector.hide()
+    val tone = viewModel.getActiveTone
+    idx match
+      case 3 | 11 => inspector.bindFilter(tone.filterViewModel)
+      case _      =>
+        envelopeForCell(tone, idx) match
+          case Some(env) => inspector.bind(env)
+          case None      => inspector.hide()
 
   private def bindActiveTone(): Unit =
     val tone = viewModel.getActiveTone

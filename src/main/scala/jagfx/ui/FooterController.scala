@@ -12,8 +12,8 @@ import jagfx.utils.IconUtils
 import javafx.geometry.Pos
 import jagfx.Constants
 
-class FooterController(viewModel: SynthViewModel):
-  private val view = HBox()
+class FooterController(viewModel: SynthViewModel) extends IController[HBox]:
+  protected val view = HBox()
   view.getStyleClass.add("footer")
 
   private val tonesPanel = createTonesPanel()
@@ -22,8 +22,6 @@ class FooterController(viewModel: SynthViewModel):
   private val modePanel = createModePanel()
 
   view.getChildren.addAll(tonesPanel, harmonicsPanel, reverbPanel, modePanel)
-
-  def getView: HBox = view
 
   private def createTonesPanel(): VBox =
     val panel = VBox()

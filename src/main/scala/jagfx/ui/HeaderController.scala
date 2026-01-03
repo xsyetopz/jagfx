@@ -16,12 +16,12 @@ import jagfx.Constants
 import jagfx.utils._
 import javafx.geometry.Pos
 
-class HeaderController(viewModel: SynthViewModel):
+class HeaderController(viewModel: SynthViewModel) extends IController[HBox]:
   import Constants._
   private var currentFile: Option[File] = None
   private var currentClip: Option[Clip] = None
 
-  private val view = HBox()
+  protected val view = HBox()
   view.getStyleClass.add("header")
   view.setSpacing(4)
   view.setAlignment(Pos.CENTER_LEFT)
@@ -142,8 +142,6 @@ class HeaderController(viewModel: SynthViewModel):
   rightGroup.getChildren.add(fileGroup)
 
   view.getChildren.addAll(leftGroup, centerGroup, rightGroup)
-
-  def getView: HBox = view
 
   private def openFile(): Unit =
     val chooser = new FileChooser()
