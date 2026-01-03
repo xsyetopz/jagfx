@@ -11,8 +11,9 @@ object SynthReader:
   /** Parse error with message and byte position. */
   case class ParseError(message: String, position: Int)
 
-  /** Parses `.synth` binary data into `SynthFile`. Returns `Left` on parse
-    * failure.
+  /** Parses `.synth` binary data into `SynthFile`.
+    *
+    * Returns `Left` on parse failure.
     */
   def read(data: Array[Byte]): Either[ParseError, SynthFile] =
     val buf = BinaryBuffer(data)
@@ -34,8 +35,9 @@ object SynthReader:
         e.printStackTrace()
         Left(ParseError(e.getMessage, buf.pos))
 
-  /** Reads `.synth` file from filesystem path. Returns `Left` on IO or parse
-    * failure.
+  /** Reads `.synth` file from filesystem path.
+    *
+    * Returns `Left` on IO or parse failure.
     */
   def readFromPath(path: Path): Either[ParseError, SynthFile] =
     try
