@@ -1,76 +1,105 @@
-# JagFX
+# JagFX Additive Synthesizer
 
-Jagex Audio Synthesis Engine & Tools.
+Clear and powerful tool for working with Jagex Audio Synthesis files. Allows you to view, play, and convert `.synth` files to `.wav`.
 
----
+## Prerequisites
 
-## Commands
+Before you start, make sure you have following installed:
 
-### Dependencies
+- **Java Development Kit (JDK) 21** or higher.
+- **sbt** (Scala Build Tool) 1.11 or higher.
+- **Node.js** (for `npx`) or `bun` (for `bunx`). Required to compile visual styles (SCSS).
 
-- `JDK 21+`
-- `sbt 1.11+`
+## Getting Started
 
-### Build & Run
+### 1. Build Project
 
-- `sbt compile`: Compile source
-- `sbt "run -- <input.synth> <output.wav> [loopCount]"`: Run CLI from source
-- `sbt test`: Execute unit tests (munit)
+Open your terminal in project folder and run:
 
-### Deployment
+```bash
+sbt compile
+```
 
-- `sbt stage`: Generate native scripts in `target/universal/stage/bin/`
-- `./target/universal/stage/bin/jagfx-cli <input.synth> <output.wav> [loopCount]`: Execute binary
+This will download all necessary library dependencies and compile source code.
 
----
+### 2. Run GUI Application
 
-## CLI Usage
+To launch graphical interface:
 
-`jagfx-cli` converts Jagex `.synth` binary files to 8-bit mono PCM `.wav` files.
+```bash
+sbt run
+```
 
-**Arguments**:
+This opens main JagFX synthesizer window where you can:
 
-- `input.synth`: Path to source file
-- `output.wav`: Path for output file
-- `loopCount`: (Optional) Repetitions for loop region (Default: `1`)
+- **Load** `.synth` files.
+- **Play** and loop audio tracks.
+- **Visualize** waveforms and envelopes.
+- **Export** to `.synth` and/or `.wav`.
 
----
+### 3. Run CLI Tool
+
+JagFX includes command-line interface for batch converting files without opening GUI.
+
+**Command Format:**
+
+```bash
+sbt "cli <input.synth> <output.wav> [loopCount]"
+```
+
+**Examples:**
+
+Convert file once:
+
+```bash
+sbt "cli input.synth output.wav"
+```
+
+Convert file and loop it 4 times:
+
+```bash
+sbt "cli input.synth output_looped.wav 4"
+```
+
+### 4. Run Tests
+
+To verify that everything is working correctly:
+
+```bash
+sbt test
+```
+
+## Creating Standalone App
+
+You can package JagFX as standalone application that does not require `sbt` to run.
+
+1. **Stage application:**
+
+    ```bash
+    sbt stage
+    ```
+
+2. **Run generated binary:**
+
+    - **Mac/Linux:** `./target/universal/stage/bin/jagfx` (GUI) or `./target/universal/stage/bin/jagfx-cli` (CLI)
+    - **Windows:** `.\target\universal\stage\bin\jagfx.bat`
 
 ## Project Structure
 
+Here is quick overview of key folders:
+
 ```text
-src/main/scala/jagfx/
-├── io/                 # Binary serialization & WAV generation
-├── model/              # Pure data models (Tone, Envelope, etc.)
-├── synth/              # DSP & Waveform generation logic
-└── Constants.scala     # Shared constants
-└── JagFXCli.scala      # Main CLI entry point
+src/main/
+├── scala/jagfx/
+│   ├── io/                 # Handles reading/writing binary .synth files
+│   ├── model/              # Data structures (Tones, Envelopes)
+│   ├── synth/              # Audio synthesis engine (DSP)
+│   ├── ui/                 # GUI controllers and views
+│   ├── JagFX.scala         # GUI Entry point
+│   └── JagFXCli.scala      # CLI Entry point
+└── scss/                   # Stylesheets for UI
 ```
-
-## Implementation Layers
-
-- **Model**: Immutable representation of `.synth` file structure.
-- **IO**: Bitstream parsing and 8-bit WAV encoding.
-- **Synth**: Additive synthesis engine with FM/AM modulation and reverb.
-- **CLI**: Batch processing interface.
-
----
-
-## Documentation
-
-- `docs/synth_format_spec.md`: Detailed binary specification.
-
-## Logging
-
-Uses `scribe` logger. Output to `stdout`.
-
-- `INFO`: Conversion progress and file stats.
-- `DEBUG`: Harmonic/Envelope processing details.
-- `WARN`: Invalid loop ranges or empty synth files.
-- `ERROR`: IO or Parse failures.
-
----
 
 ## License
 
-This project is licensed under MIT License - see [LICENSE](LICENSE) file for details.
+This project is licensed under MIT License. See `LICENSE` file for more details.
