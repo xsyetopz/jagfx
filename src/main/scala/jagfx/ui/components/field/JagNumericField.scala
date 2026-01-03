@@ -3,6 +3,12 @@ package jagfx.ui.components.field
 import javafx.beans.property._
 import javafx.scene.control.TextField
 import javafx.geometry.Pos
+import javafx.scene.control.TextFormatter
+import javafx.util.converter.DefaultStringConverter
+import java.util.function.UnaryOperator
+import java.util.regex.Pattern
+
+private val FieldSize = 40
 
 /** Integer input field with min/max validation. */
 class JagNumericField(
@@ -13,19 +19,45 @@ class JagNumericField(
     format: String = "%.0f"
 ) extends JagBaseField(initial):
 
+  private val validPattern = Pattern.compile("-?(([0-9]*)|([0-9]*\\.[0-9]*))")
+
   getStyleClass.add("jag-input")
   setAlignment(Pos.CENTER_RIGHT)
+  setPrefWidth(FieldSize)
+  setMinWidth(FieldSize)
+
+  private val filter: UnaryOperator[TextFormatter.Change] = change =>
+    val newText = change.getControlNewText
+    if validPattern.matcher(newText).matches() then
+      if newText.isEmpty || newText == "-" || newText == "." || newText == "-."
+      then change
+      else
+        try
+          val parsed = newText.toDouble
+          val scaled = parsed * scale
+
+          val blockMax = max > 0 && scaled > max
+          val blockMin = min < 0 && scaled < min
+          if blockMax || blockMin then null else change
+        catch case _: NumberFormatException => null
+    else null
+
+  private val formatter =
+    new TextFormatter[String](DefaultStringConverter(), null, filter)
+  setTextFormatter(formatter)
+
   setText(String.format(format, (initial / scale).asInstanceOf[Object]))
-  setPrefWidth(40)
-  setMinWidth(40)
+
+  setOnAction(_ => if getParent != null then getParent.requestFocus())
 
   textProperty.addListener((_, _, newText) =>
-    try
-      val parsed = newText.toDouble
-      val scaled = (parsed * scale).round.toInt
-      val clamped = math.max(min, math.min(max, scaled))
-      if value.get != clamped then value.set(clamped)
-    catch case _: NumberFormatException => ()
+    if !newText.isEmpty && newText != "-" && newText != "." then
+      try
+        val parsed = newText.toDouble
+        val scaled = (parsed * scale).round.toInt
+        val clamped = math.max(min, math.min(max, scaled))
+        if value.get != clamped then value.set(clamped)
+      catch case _: NumberFormatException => ()
   )
 
   value.addListener((_, _, newVal) =>
@@ -38,7 +70,8 @@ class JagNumericField(
   focusedProperty.addListener((_, _, focused) =>
     if !focused then
       val displayVal = value.get / scale
-      setText(String.format(format, displayVal.asInstanceOf[Object]))
+      val str = String.format(format, displayVal.asInstanceOf[Object])
+      setText(str)
   )
 
 object JagNumericField:
