@@ -44,7 +44,7 @@ sbt test
 Batch convert files without opening GUI:
 
 ```bash
-# Usage: sbt "cli <input.synth> <output.wav> [loopCount]"
+# sbt "cli <input.synth> <output.wav> [loopCount]"
 
 # convert single file
 sbt "cli input.synth output.wav"
