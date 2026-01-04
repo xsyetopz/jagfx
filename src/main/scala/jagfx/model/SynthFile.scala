@@ -20,7 +20,8 @@ case class LoopParams(begin: Int, end: Int):
   */
 case class SynthFile(
     tones: Vector[Option[Tone]],
-    loop: LoopParams
+    loop: LoopParams,
+    warnings: List[String] = Nil
 ):
   /** Returns active tones with their indices. */
   def activeTones: Vector[(Int, Tone)] =
