@@ -3,8 +3,8 @@
 .root {
     -fx-base: #101010;
     -fx-background-color: $bg-root;
-    -fx-font-family: "Consolas", "Monaco", "Courier New", monospace;
-    -fx-font-size: 10px;
+    -fx-font-family: $font-stack;
+    -fx-font-size: $font-size-base;
     -fx-text-fill: $text-main;
 }
 
@@ -14,13 +14,13 @@
     -fx-background-color: $bg-btn;
     -fx-border-color: $border-dim;
     -fx-text-fill: $text-btn;
-    -fx-background-radius: 2px;
-    -fx-padding: 0 4px;
+    -fx-background-radius: $radius-md;
+    -fx-padding: 0 $space-md;
     -fx-cursor: hand;
     -fx-alignment: center;
-    -fx-min-height: 18px;
-    -fx-max-height: 18px;
-    -fx-min-width: 16px;
+    -fx-min-height: $height-control;
+    -fx-max-height: $height-control;
+    -fx-min-width: $width-btn-min;
 
     &:hover {
         -fx-text-fill: $text-main;
@@ -41,16 +41,16 @@
 
 .jag-check {
     -fx-text-fill: $text-dim;
-    -fx-font-size: 10px;
+    -fx-font-size: $font-size-base;
     -fx-cursor: hand;
-    -fx-padding: 0 4px;
+    -fx-padding: 0 $space-md;
     -fx-alignment: center-left;
 
     .box {
         -fx-background-color: $bg-input;
         -fx-border-color: $border-dim;
-        -fx-border-radius: 2px;
-        -fx-padding: 2px;
+        -fx-border-radius: $radius-md;
+        -fx-padding: $space-sm;
     }
 
     .mark {
@@ -78,12 +78,12 @@
     -fx-background-color: $bg-input;
     -fx-border-color: $border-dim;
     -fx-text-fill: $text-main;
-    -fx-background-radius: 2px;
+    -fx-background-radius: $radius-md;
     -fx-alignment: center-right;
-    -fx-padding: 0 4px;
-    -fx-min-width: 24px;
-    -fx-min-height: 18px;
-    -fx-max-height: 18px;
+    -fx-padding: 0 $space-md;
+    -fx-min-width: $width-input-min;
+    -fx-min-height: $height-control;
+    -fx-max-height: $height-control;
 
     &:focused {
         -fx-border-color: $border-accent;
@@ -93,7 +93,7 @@
 .bar-box {
     -fx-background-color: $bg-root;
     -fx-border-color: $border-dim;
-    -fx-border-radius: 1px;
+    -fx-border-radius: $radius-sm;
     -fx-cursor: h_resize;
 }
 
@@ -107,7 +107,7 @@
     -fx-border-width: 1px;
 
     &:disabled {
-        -fx-opacity: 0.4;
+        -fx-opacity: $opacity-disabled;
     }
 
     &.selected {
@@ -120,26 +120,26 @@
     }
 
     &.collapsed {
-        -fx-pref-height: 22px;
-        -fx-max-height: 22px;
+        -fx-pref-height: $height-cell-collapsed;
+        -fx-max-height: $height-cell-collapsed;
     }
 }
 
 .cell-head {
     -fx-background-color: rgba(0, 0, 0, 0.5);
-    -fx-padding: 2px 4px;
+    -fx-padding: $space-sm $space-md;
     -fx-alignment: center-left;
 }
 
 .cell-title {
     -fx-text-fill: $text-dim;
     -fx-font-weight: bold;
-    -fx-font-size: 9px;
+    -fx-font-size: $font-size-sm;
 }
 
 .t-btn {
-    -fx-font-size: 9px;
-    -fx-padding: 0 4px;
+    -fx-font-size: $font-size-sm;
+    -fx-padding: 0 $space-md;
     -fx-background-color: $bg-btn;
     -fx-text-fill: $text-subtle;
     -fx-border-color: $bg-root;
@@ -150,14 +150,14 @@
 }
 
 .h-strip {
-    -fx-spacing: 2px;
+    -fx-spacing: $space-sm;
     -fx-alignment: top-center;
-    -fx-padding: 2px;
+    -fx-padding: $space-sm;
     -fx-border-color: transparent $border-dim transparent transparent;
 }
 
 .h-head {
-    -fx-font-size: 9px;
+    -fx-font-size: $font-size-sm;
     -fx-font-weight: bold;
     -fx-text-fill: $text-dim;
 }
@@ -165,14 +165,14 @@
 // Help Pane
 
 .help-header {
-    -fx-font-size: 10px;
+    -fx-font-size: $font-size-base;
     -fx-font-weight: bold;
     -fx-text-fill: $text-accent;
-    -fx-padding: 4px 0 2px 0;
+    -fx-padding: $space-md 0 $space-sm 0;
 }
 
 .help-text {
-    -fx-font-size: 10px;
+    -fx-font-size: $font-size-base;
     -fx-text-fill: $text-dim;
     -fx-wrap-text: true;
 }
@@ -183,46 +183,46 @@
 .gate-pane {
     -fx-background-color: $bg-panel;
     -fx-border-color: $border-dim;
-    -fx-border-radius: 4px;
-    -fx-background-radius: 4px;
-    -fx-padding: 2px;
+    -fx-border-radius: $radius-lg;
+    -fx-background-radius: $radius-lg;
+    -fx-padding: $space-sm;
 
     .panel-head {
-        -fx-font-size: 9px;
-        -fx-padding: 2px 4px;
+        -fx-font-size: $font-size-sm;
+        -fx-padding: $space-sm $space-md;
     }
 }
 
 .timing-inspector {
     -fx-border-color: $border-dim transparent transparent transparent;
-    -fx-padding: 8px 0 0 0;
+    -fx-padding: $space-xl 0 0 0;
 }
 
 // Envelope Segment Editor
 
 .segment-table {
     -fx-border-color: $border-dim;
-    -fx-border-width: 1px;
+    -fx-border-width: $space-xs;
 }
 
 .segment-table-header {
     -fx-background-color: $bg-header;
-    -fx-padding: 2px 0;
+    -fx-padding: $space-sm 0;
     -fx-border-color: transparent transparent $border-dim transparent;
-    -fx-border-width: 0 0 1px 0;
+    -fx-border-width: 0 0 $space-xs 0;
 }
 
 .segment-table-scroll {
     -fx-background-color: transparent;
     -fx-background: transparent;
     -fx-border-width: 0;
-    -fx-max-height: 120px;
+    -fx-max-height: $height-table-scroll;
 }
 
 .segment-table-row {
-    -fx-padding: 1px 0;
+    -fx-padding: $space-xs 0;
     -fx-border-color: transparent transparent $border-dim transparent;
-    -fx-border-width: 0 0 1px 0;
+    -fx-border-width: 0 0 $space-xs 0;
 }
 
 .segment-add-btn {
@@ -233,12 +233,12 @@
 .table-field .text-field {
     -fx-background-insets: 0;
     -fx-background-radius: 0;
-    -fx-font-size: 9px;
-    -fx-padding: 0 2px;
+    -fx-font-size: $font-size-sm;
+    -fx-padding: 0 $space-sm;
 }
 
 .h-head-small {
-    -fx-font-size: 9px;
+    -fx-font-size: $font-size-sm;
     -fx-text-fill: $text-dim;
     -fx-font-weight: bold;
     -fx-alignment: center-left;
@@ -246,9 +246,9 @@
 
 .dim-label {
     -fx-text-fill: $text-subtle;
-    -fx-font-size: 9px;
+    -fx-font-size: $font-size-sm;
     -fx-alignment: center-right;
-    -fx-padding: 0 4px 0 0;
+    -fx-padding: 0 $space-md 0 0;
 }
 
 .icon-dim {
