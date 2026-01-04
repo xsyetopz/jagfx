@@ -255,3 +255,30 @@
     -fx-fill: $text-dim;
     -fx-icon-color: $text-dim;
 }
+
+// Envelope Editor Overlay
+.editor-overlay {
+    -fx-background-color: rgba(0, 0, 0, 0.95);
+    -fx-padding: $space-md;
+}
+
+.editor-content {
+    -fx-spacing: $space-md;
+}
+
+.editor-header {
+    -fx-background-color: $bg-header;
+    -fx-padding: $space-md $space-xl;
+    -fx-border-color: $border-dim;
+    -fx-border-width: 0 0 1px 0;
+}
+
+.editor-title {
+    -fx-font-size: $font-size-lg;
+    -fx-font-weight: bold;
+    -fx-text-fill: $text-accent;
+}
+
+.jag-envelope-editor-canvas {
+    -fx-cursor: crosshair;
+}
