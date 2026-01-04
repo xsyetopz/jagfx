@@ -8,7 +8,7 @@
   >
 </p>
 
-Cross-platform editor for Jagex Audio Synthesis (`.synth`) files. Create, edit, visualize, and export RuneScape-era sound effects.
+Cross-platform editor for Jagex Audio Synthesis (`.synth`) files. Create, edit, visualize, and export older/newer OldSchool RuneScape sound effects.
 
 ## Features
 
