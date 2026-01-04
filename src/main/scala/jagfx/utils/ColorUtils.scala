@@ -25,3 +25,4 @@ object ColorUtils:
 
   // Grid
   val GridLineFaint: Int = 0xff2a2a2a
+  val GridLineMinor: Int = 0xff1a1a1a
