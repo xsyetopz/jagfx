@@ -1,0 +1,53 @@
+name: Build and Release
+
+on:
+  push:
+    branches: [main]
+    tags: ["v*"]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build:
+    permissions:
+      contents: write
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: "zulu"
+          java-version: "21"
+          cache: "sbt"
+
+      - name: Build Fat Jar (Linux only)
+        if: matrix.os == 'ubuntu-latest'
+        run: sbt assembly
+
+      - name: Upload Fat Jar
+        if: matrix.os == 'ubuntu-latest'
+        uses: actions/upload-artifact@v4
+        with:
+          name: jagfx-fat-jar
+          path: target/scala-*/*.jar
+
+      - name: Build Native Installer
+        shell: bash
+        run: sbt jpackage:packageBin
+
+      - name: Upload Installer
+        uses: actions/upload-artifact@v4
+        with:
+          name: jagfx-installer-${{ matrix.os }}
+          path: |
+            target/universal/package/linux/*.deb
+            target/universal/package/linux/*.rpm
+            target/universal/package/windows/*.msi
+            target/universal/package/windows/*.exe
+            target/universal/package/mac/*.dmg
