@@ -15,8 +15,8 @@ object ColorUtils:
   val Graph: Int = 0xffee7733 // $bg-graph (envelope curves)
 
   // Filter
-  val FilterPole: Int = 0xff009988 // teal for poles
-  val FilterZero: Int = 0xffcc3311 // red-orange for zeros
+  val FilterPole: Int = 0xff009e73 // $color-info teal for poles
+  val FilterZero: Int = 0xffee7733 // $bg-graph orange for zeros
   val FilterResponse: Int = 0xff33bb99 // frequency response curve
 
   // Semantic
