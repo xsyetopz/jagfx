@@ -106,7 +106,7 @@ object HarmonicsPanel:
     val label = Label(s"HARMONIC ${index + 1}")
     label.getStyleClass.add("h-head")
 
-    val sRow = HarmonicsRow("SEMI:", -120, 120, 9.0, "%.1f")
+    val sRow = HarmonicsRow("SEMI:", -480, 480, 10.0, "%.1f")
     val vRow = HarmonicsRow("VOL:", 0, 100)
     val dRow = HarmonicsRow("DEL:", 0, 1000)
 
@@ -141,12 +141,14 @@ class HarmonicsRow(
 
   val input = JagNumericField(min, max, 0, scale, format)
   input.setPrefWidth(32)
-  // Add tooltip based on field type
-  input.setTooltip(new Tooltip(labelTxt match
-    case "SEMI:" => "Semitone offset (decicents, 10=1 semitone)"
+  val scrollHelp = "\nScroll: ±1\nShift: ±10\nCmd: ±0.01"
+  val tipText = labelTxt match
+    case "SEMI:" => "Semitone offset (decicents, 10 = 1 semitone)"
     case "VOL:"  => "Harmonic volume (0-100%)"
-    case "DEL:"  => "Phase delay in samples"
-    case _       => labelTxt))
+    case "DEL:"  => "Phase delay (ms)"
+    case _       => labelTxt
+
+  input.setTooltip(new Tooltip(tipText + scrollHelp))
 
   val barBox = VBox()
   barBox.getStyleClass.add("bar-box")

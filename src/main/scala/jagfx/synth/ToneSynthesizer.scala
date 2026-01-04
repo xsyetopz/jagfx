@@ -3,12 +3,11 @@ package jagfx.synth
 import jagfx.model._
 import jagfx.Constants
 import jagfx.utils.MathUtils.clamp
+import jagfx.Constants.Int16
 
 private val PhaseScale: Double = 32.768
 private val NoisePhaseDiv: Int = 2607
-private val MaxHarmonics: Int = 5
 private val PhaseMask: Int = 0x7fff
-private val HalfPhase: Int = 16384
 
 /** Synthesizes single `Tone` into audio samples using FM/AM modulation and
   * additive synthesis.
@@ -130,12 +129,16 @@ object ToneSynthesizer:
       tone: Tone,
       samplesPerStep: Double
   ): (Array[Int], Array[Int], Array[Int], Array[Int]) =
-    val delays = new Array[Int](MaxHarmonics)
-    val volumes = new Array[Int](MaxHarmonics)
-    val semitones = new Array[Int](MaxHarmonics)
-    val starts = new Array[Int](MaxHarmonics)
+    val delays = new Array[Int](Constants.MaxHarmonics)
+    val volumes = new Array[Int](Constants.MaxHarmonics)
+    val semitones = new Array[Int](Constants.MaxHarmonics)
+    val starts = new Array[Int](Constants.MaxHarmonics)
 
-    for harmonic <- 0 until math.min(MaxHarmonics, tone.harmonics.length) do
+    for harmonic <- 0 until math.min(
+        Constants.MaxHarmonics,
+        tone.harmonics.length
+      )
+    do
       val h = tone.harmonics(harmonic)
       if h.volume != 0 then
         delays(harmonic) = (h.delay * samplesPerStep).toInt
@@ -220,7 +223,11 @@ object ToneSynthesizer:
       amplitude: Int,
       phases: Array[Int]
   ): Unit =
-    for harmonic <- 0 until math.min(MaxHarmonics, tone.harmonics.length) do
+    for harmonic <- 0 until math.min(
+        Constants.MaxHarmonics,
+        tone.harmonics.length
+      )
+    do
       if tone.harmonics(harmonic).volume != 0 then
         val position = sample + state.harmonicDelays(harmonic)
         if position >= 0 && position < sampleCount then
@@ -236,7 +243,7 @@ object ToneSynthesizer:
   private def generateSample(amplitude: Int, phase: Int, form: WaveForm): Int =
     form match
       case WaveForm.Square =>
-        if (phase & PhaseMask) < HalfPhase then amplitude else -amplitude
+        if (phase & PhaseMask) < Int16.Quarter then amplitude else -amplitude
       case WaveForm.Sine =>
         (LookupTables.sin(phase & PhaseMask) * amplitude) >> 14
       case WaveForm.Saw => (((phase & PhaseMask) * amplitude) >> 14) - amplitude

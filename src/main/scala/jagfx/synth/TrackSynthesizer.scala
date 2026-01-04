@@ -39,7 +39,11 @@ object TrackSynthesizer:
       )
     clipBuffer(buffer)
 
-    AudioBuffer(buffer, Constants.SampleRate)
+    val output = new Array[Int](totalSampleCount)
+    System.arraycopy(buffer, 0, output, 0, totalSampleCount)
+    BufferPool.release(buffer)
+
+    AudioBuffer(output, Constants.SampleRate)
 
   private def calculateMaxDuration(file: SynthFile): Int =
     var maxDuration = 0

@@ -13,6 +13,7 @@ private val HeaderWidth = 55
 
 class EnvelopeSegmentEditor extends VBox:
   private var currentModel: Option[EnvelopeViewModel] = None
+  private var isRefreshing: Boolean = false
 
   private val contentBox = VBox(2)
   private val addButton = JagButton()
@@ -54,27 +55,31 @@ class EnvelopeSegmentEditor extends VBox:
     refresh()
 
   private def refresh(): Unit =
-    currentModel.foreach { model =>
-      val segments = model.getFullSegments
-      val currentRows = contentBox.getChildren
-      if currentRows.size > segments.length then
-        currentRows.remove(segments.length, currentRows.size)
-      if currentRows.size < segments.length then
-        for i <- currentRows.size until segments.length do
+    isRefreshing = true
+    try
+      currentModel.foreach { model =>
+        val segments = model.getFullSegments
+        val currentRows = contentBox.getChildren
+        if currentRows.size > segments.length then
+          currentRows.remove(segments.length, currentRows.size)
+        if currentRows.size < segments.length then
+          for i <- currentRows.size until segments.length do
+            val seg = segments(i)
+            contentBox.getChildren.add(createRow(i, seg.duration, seg.peak))
+
+        for i <- 0 until segments.length do
           val seg = segments(i)
-          contentBox.getChildren.add(createRow(i, seg.duration, seg.peak))
+          val row = currentRows.get(i).asInstanceOf[HBox]
+          // row children: [Label(#), DurField, PeakField, DelBtn]
+          val durField = row.getChildren.get(1).asInstanceOf[JagNumericField]
+          val peakField = row.getChildren.get(2).asInstanceOf[JagNumericField]
 
-      for i <- 0 until segments.length do
-        val seg = segments(i)
-        val row = currentRows.get(i).asInstanceOf[HBox]
-        // row children: [Label(#), DurField, PeakField, DelBtn]
-        val durField = row.getChildren.get(1).asInstanceOf[JagNumericField]
-        val peakField = row.getChildren.get(2).asInstanceOf[JagNumericField]
-
-        if durField.getValue != seg.duration then
-          durField.setValue(seg.duration)
-        if peakField.getValue != seg.peak then peakField.setValue(seg.peak)
-    }
+          if durField.getValue != seg.duration then
+            durField.setValue(seg.duration)
+          if peakField.getValue != seg.peak then peakField.setValue(seg.peak)
+      }
+    finally
+      isRefreshing = false
 
   private def createHeader(): HBox =
     val box = HBox(0)
@@ -125,11 +130,14 @@ class EnvelopeSegmentEditor extends VBox:
       durField.valueProperty.asString("Raw: %d").concat(helpText)
     )
     durField.setTooltip(durTip)
-    durField.valueProperty.addListener((_, _, nv) =>
-      update(index, nv.intValue, peak)
-    )
 
     val peakField = JagNumericField(0, Int16.Range, peak, scale, fmt)
+    durField.valueProperty.addListener((_, _, nv) =>
+      if !isRefreshing then
+        val currentPeak = peakField.getValue.intValue
+        update(index, nv.intValue, currentPeak)
+    )
+
     peakField.setPrefWidth(55)
     peakField.getStyleClass.add("table-field")
     val peakTip = new Tooltip()
@@ -138,7 +146,9 @@ class EnvelopeSegmentEditor extends VBox:
     )
     peakField.setTooltip(peakTip)
     peakField.valueProperty.addListener((_, _, nv) =>
-      update(index, duration, nv.intValue)
+      if !isRefreshing then
+        val currentDur = durField.getValue.intValue
+        update(index, currentDur, nv.intValue)
     )
 
     val delBtn = JagButton()
