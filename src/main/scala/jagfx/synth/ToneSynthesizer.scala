@@ -2,12 +2,8 @@ package jagfx.synth
 
 import jagfx.model._
 import jagfx.Constants
-import jagfx.utils.MathUtils.clamp
-import jagfx.Constants.Int16
-
-private val PhaseScale: Double = 32.768
-private val NoisePhaseDiv: Int = 2607
-private val PhaseMask: Int = 0x7fff
+import jagfx.Constants.{Int16, PhaseScale, NoisePhaseDiv, PhaseMask}
+import jagfx.utils.MathUtils.{clamp, clipInt16}
 
 /** Synthesizes single `Tone` into audio samples using FM/AM modulation and
   * additive synthesis.
@@ -24,21 +20,22 @@ object ToneSynthesizer:
     val samplesPerStep = sampleCount.toDouble / tone.duration.toDouble
     val buffer = BufferPool.acquire(sampleCount)
 
-    val state = initSynthState(tone, samplesPerStep, sampleCount)
-    renderSamples(buffer, tone, state, sampleCount)
+    val state = _initSynthState(tone, samplesPerStep, sampleCount)
+    _renderSamples(buffer, tone, state, sampleCount)
 
-    applyGating(buffer, tone, sampleCount)
-    applyReverb(buffer, tone, samplesPerStep, sampleCount)
+    _applyGating(buffer, tone, sampleCount)
+    _applyReverb(buffer, tone, samplesPerStep, sampleCount)
 
     tone.filter.foreach { f =>
       FilterSynthesizer.apply(buffer, f, sampleCount)
     }
 
-    clipBuffer(buffer, sampleCount)
+    clipInt16(buffer, sampleCount)
 
-    val result = AudioBuffer(buffer.clone(), Constants.SampleRate)
+    val output = new Array[Int](sampleCount)
+    System.arraycopy(buffer, 0, output, 0, sampleCount)
     BufferPool.release(buffer)
-    result
+    AudioBuffer(output, Constants.SampleRate)
 
   private case class SynthState(
       freqBaseEval: EnvelopeEvaluator,
@@ -57,7 +54,7 @@ object ToneSynthesizer:
       harmonicStarts: Array[Int]
   )
 
-  private def initSynthState(
+  private def _initSynthState(
       tone: Tone,
       samplesPerStep: Double,
       sampleCount: Int
@@ -68,13 +65,13 @@ object ToneSynthesizer:
     ampBaseEval.reset()
 
     val (freqModRateEval, freqModRangeEval, frequencyStart, frequencyDuration) =
-      initFrequencyModulation(tone, samplesPerStep)
+      _initFrequencyModulation(tone, samplesPerStep)
 
     val (ampModRateEval, ampModRangeEval, amplitudeStart, amplitudeDuration) =
-      initAmplitudeModulation(tone, samplesPerStep)
+      _initAmplitudeModulation(tone, samplesPerStep)
 
     val (delays, volumes, semitones, starts) =
-      initHarmonics(tone, samplesPerStep)
+      _initHarmonics(tone, samplesPerStep)
 
     SynthState(
       freqBaseEval,
@@ -93,7 +90,7 @@ object ToneSynthesizer:
       starts
     )
 
-  private def initFrequencyModulation(
+  private def _initFrequencyModulation(
       tone: Tone,
       samplesPerStep: Double
   ): (Option[EnvelopeEvaluator], Option[EnvelopeEvaluator], Int, Int) =
@@ -109,7 +106,7 @@ object ToneSynthesizer:
       case None =>
         (None, None, 0, 0)
 
-  private def initAmplitudeModulation(
+  private def _initAmplitudeModulation(
       tone: Tone,
       samplesPerStep: Double
   ): (Option[EnvelopeEvaluator], Option[EnvelopeEvaluator], Int, Int) =
@@ -125,7 +122,7 @@ object ToneSynthesizer:
       case None =>
         (None, None, 0, 0)
 
-  private def initHarmonics(
+  private def _initHarmonics(
       tone: Tone,
       samplesPerStep: Double
   ): (Array[Int], Array[Int], Array[Int], Array[Int]) =
@@ -153,7 +150,7 @@ object ToneSynthesizer:
 
     (delays, volumes, semitones, starts)
 
-  private def renderSamples(
+  private def _renderSamples(
       buffer: Array[Int],
       tone: Tone,
       state: SynthState,
@@ -165,7 +162,6 @@ object ToneSynthesizer:
     var amplitudePhase = 0
     var startFreq = 0
     var startAmp = 0
-    var maxAmpSample = 0
 
     for sample <- 0 until sampleCount do
       var frequency = state.freqBaseEval.evaluate(sampleCount)
@@ -179,7 +175,7 @@ object ToneSynthesizer:
         case (Some(rateEval), Some(rangeEval)) =>
           val rate = rateEval.evaluate(sampleCount)
           val range = rangeEval.evaluate(sampleCount)
-          frequency += generateSample(
+          frequency += _generateSample(
             range,
             frequencyPhase,
             tone.vibratoRate.get.form
@@ -191,15 +187,15 @@ object ToneSynthesizer:
         case (Some(rateEval), Some(rangeEval)) =>
           val rate = rateEval.evaluate(sampleCount)
           val range = rangeEval.evaluate(sampleCount)
-          amplitude = amplitude * ((generateSample(
+          amplitude = amplitude * ((_generateSample(
             range,
             amplitudePhase,
             tone.tremoloRate.get.form
-          ) >> 1) + Int16.UnsignedMid) >> 15
+          ) >> 1) + Int16.UnsignedMaxValue) >> 15
           amplitudePhase += (rate * state.amplitudeStart >> 16) + state.amplitudeDuration
         case _ => ()
 
-      renderHarmonics(
+      _renderHarmonics(
         buffer,
         tone,
         state,
@@ -210,10 +206,7 @@ object ToneSynthesizer:
         phases
       )
 
-      if math.abs(buffer(sample)) > maxAmpSample then
-        maxAmpSample = math.abs(buffer(sample))
-
-  private def renderHarmonics(
+  private def _renderHarmonics(
       buffer: Array[Int],
       tone: Tone,
       state: SynthState,
@@ -231,7 +224,7 @@ object ToneSynthesizer:
       if tone.harmonics(harmonic).volume != 0 then
         val position = sample + state.harmonicDelays(harmonic)
         if position >= 0 && position < sampleCount then
-          buffer(position) += generateSample(
+          buffer(position) += _generateSample(
             amplitude * state.harmonicVolumes(harmonic) >> 15,
             phases(harmonic),
             tone.pitchEnvelope.form
@@ -240,7 +233,7 @@ object ToneSynthesizer:
             harmonic
           ) >> 16) + state.harmonicStarts(harmonic)
 
-  private def generateSample(amplitude: Int, phase: Int, form: WaveForm): Int =
+  private def _generateSample(amplitude: Int, phase: Int, form: WaveForm): Int =
     form match
       case WaveForm.Square =>
         if (phase & PhaseMask) < Int16.Quarter then amplitude else -amplitude
@@ -251,7 +244,7 @@ object ToneSynthesizer:
         LookupTables.noise((phase / NoisePhaseDiv) & PhaseMask) * amplitude
       case WaveForm.Off => 0
 
-  private def applyGating(
+  private def _applyGating(
       buffer: Array[Int],
       tone: Tone,
       sampleCount: Int
@@ -278,7 +271,7 @@ object ToneSynthesizer:
           if muted then buffer(sample) = 0
       case _ => ()
 
-  private def applyReverb(
+  private def _applyReverb(
       buffer: Array[Int],
       tone: Tone,
       samplesPerStep: Double,
@@ -288,8 +281,3 @@ object ToneSynthesizer:
       val start = (tone.reverbDelay * samplesPerStep).toInt
       for sample <- start until sampleCount do
         buffer(sample) += buffer(sample - start) * tone.reverbVolume / 100
-
-  private def clipBuffer(buffer: Array[Int], sampleCount: Int): Unit =
-    import Constants._
-    for sample <- 0 until sampleCount do
-      buffer(sample) = clamp(buffer(sample), Int16.Min, Int16.Max)
