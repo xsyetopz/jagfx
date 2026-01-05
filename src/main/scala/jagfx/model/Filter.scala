@@ -14,9 +14,9 @@ package jagfx.model
   *   Optional filter envelope (transition curve).
   */
 case class Filter(
-    pairCounts: Array[Int], // [2]
-    unity: Array[Int], // [2]
-    pairPhase: Array[Array[Array[Int]]], // [2][2][pairCount]
-    pairMagnitude: Array[Array[Array[Int]]], // [2][2][pairCount]
+    pairCounts: IArray[Int], // [2]
+    unity: IArray[Int], // [2]
+    pairPhase: IArray[IArray[IArray[Int]]], // [2][2][pairCount]
+    pairMagnitude: IArray[IArray[IArray[Int]]], // [2][2][pairCount]
     envelope: Option[Envelope]
 )
