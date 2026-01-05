@@ -5,7 +5,7 @@ Global / onChangedBuildSource := ReloadOnSourceChanges
 Global / excludeLintKeys += Universal / libraryDependencies
 
 ThisBuild / organization := "jagfx"
-ThisBuild / version := "1.1.2"
+ThisBuild / version := "1.2.0"
 ThisBuild / scalaVersion := "3.7.4"
 
 ThisBuild / semanticdbEnabled := true
