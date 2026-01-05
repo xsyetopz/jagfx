@@ -110,20 +110,25 @@ class ToneViewModel extends IViewModel:
     if !enabled.get then None
     else
       val activeHarmonics =
-        harmonics.take(5).filter(_.active.get).map(_.toModel()).toVector
+        harmonics
+          .take(Constants.MaxHarmonics / 2)
+          .filter(_.active.get)
+          .map(_.toModel())
+          .toVector
+
+      val emptyIArray3D =
+        IArray.tabulate(2)(_ => IArray.tabulate(2)(_ => IArray.fill(4)(0)))
 
       val filterModel = filterViewMode.toModel() match
         case Some(f) =>
-          val env =
-            if filterEnvelope.isEmpty then None
-            else Some(filterEnvelope.toModel())
+          val env = _optModel(filterEnvelope)
           Some(f.copy(envelope = env))
         case None if !filterEnvelope.isEmpty =>
           val empty = Filter(
-            Array(0, 0),
-            Array(0, 0),
-            Array.ofDim(2, 2, 4),
-            Array.ofDim(2, 2, 4),
+            IArray(0, 0),
+            IArray(0, 0),
+            emptyIArray3D,
+            emptyIArray3D,
             None
           )
           Some(empty.copy(envelope = Some(filterEnvelope.toModel())))
@@ -133,12 +138,12 @@ class ToneViewModel extends IViewModel:
         Tone(
           pitch.toModel(),
           volume.toModel(),
-          if vibratoRate.isEmpty then None else Some(vibratoRate.toModel()),
-          if vibratoDepth.isEmpty then None else Some(vibratoDepth.toModel()),
-          if tremoloRate.isEmpty then None else Some(tremoloRate.toModel()),
-          if tremoloDepth.isEmpty then None else Some(tremoloDepth.toModel()),
-          if gateSilence.isEmpty then None else Some(gateSilence.toModel()),
-          if gateDuration.isEmpty then None else Some(gateDuration.toModel()),
+          _optModel(vibratoRate),
+          _optModel(vibratoDepth),
+          _optModel(tremoloRate),
+          _optModel(tremoloDepth),
+          _optModel(gateSilence),
+          _optModel(gateDuration),
           activeHarmonics,
           reverbDelay.get,
           reverbVolume.get,
@@ -147,3 +152,6 @@ class ToneViewModel extends IViewModel:
           filterModel
         )
       )
+
+  private def _optModel(vm: EnvelopeViewModel): Option[Envelope] =
+    if vm.isEmpty then None else Some(vm.toModel())
