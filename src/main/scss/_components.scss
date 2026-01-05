@@ -149,14 +149,14 @@
     }
 }
 
-.h-strip {
+.height-strip {
     -fx-spacing: $space-sm;
     -fx-alignment: top-center;
     -fx-padding: $space-sm;
     -fx-border-color: transparent $border-dim transparent transparent;
 }
 
-.h-head {
+.height-head {
     -fx-font-size: $font-size-sm;
     -fx-font-weight: bold;
     -fx-text-fill: $text-dim;
@@ -237,7 +237,7 @@
     -fx-padding: 0 $space-sm;
 }
 
-.h-head-small {
+.height-head-small {
     -fx-font-size: $font-size-sm;
     -fx-text-fill: $text-dim;
     -fx-font-weight: bold;

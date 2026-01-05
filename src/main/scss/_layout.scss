@@ -13,7 +13,7 @@
     -fx-alignment: center-left;
 }
 
-.h-grp {
+.height-grp {
     -fx-alignment: center-left;
     -fx-padding: 0 $space-md 0 0;
     -fx-border-color: transparent $border-dim transparent transparent;
@@ -63,7 +63,7 @@
 
 // Footer Panel Components
 
-.h-strip {
+.height-strip {
     -fx-spacing: $space-sm;
     -fx-alignment: top-center;
     -fx-padding: $space-sm;
@@ -75,19 +75,19 @@
     -fx-pref-width: $width-strip;
 }
 
-.h-head {
+.height-head {
     -fx-font-size: $font-size-sm;
     -fx-font-weight: bold;
     -fx-text-fill: $text-head;
     -fx-border-color: transparent transparent $border-dim transparent;
 }
 
-.h-sub-row {
+.height-sub-row {
     -fx-alignment: center-left;
     -fx-spacing: $space-sm;
 }
 
-.h-lbl {
+.height-lbl {
     -fx-font-size: $font-size-sm;
     -fx-text-fill: $text-subtle;
     -fx-font-weight: bold;
