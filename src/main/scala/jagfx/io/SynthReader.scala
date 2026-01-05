@@ -1,11 +1,9 @@
 package jagfx.io
 
 import jagfx.model._
+import jagfx.Constants.{MaxTones, MaxHarmonics}
 import java.nio.file._
 import scala.collection.mutable.ListBuffer
-
-private val MaxTones: Int = 10
-private val MaxHarmonics: Int = 10
 
 /** Parser for `.synth` binary format to `SynthFile` domain model. */
 object SynthReader:
@@ -56,11 +54,18 @@ object SynthReader:
           Left(ParseError(e.getMessage, buf.pos))
 
     private def readTones(): Vector[Option[Tone]] =
-      (0 until MaxTones).map { i =>
-        if buf.remaining > 0 then
-          if buf.peek() != 0 then Some(readTone())
+      // Rev377 files have 0x00 padding bytes after each tone's data
+      // Rev245 files pack tones consecutively with no padding
+      (0 until MaxTones).map { _ =>
+        if buf.remaining > 4 then
+          val marker = buf.peek()
+          if marker != 0 then
+            val tone = readTone()
+            // skip Rev377's trailing 0x00 padding after each tone (if there)
+            if buf.remaining > 0 && buf.peek() == 0 then buf.skip(1)
+            Some(tone)
           else
-            buf.pos += 1
+            buf.skip(1)
             None
         else None
       }.toVector
@@ -105,13 +110,21 @@ object SynthReader:
     private def readFilter(): Option[Filter] =
       if buf.remaining == 0 then return None
 
-      val wasTruncated = buf.truncated
+      // Rev377 uses 0x00 as explicit "no filter" marker
+      // Rev245 has no marker as tones end directly before next FormID
+      val peeked = buf.peek()
+      if peeked == 0 then
+        buf.skip(1) // consume Rev377's "no filter" marker
+        return None
+      if peeked >= 1 && peeked <= 4 then
+        // next tone's FormID, not filter - leave alone
+        return None
+
+      val wasTruncated = buf.isTruncated
 
       val packedPairs = buf.readU8()
       val pairCount0 = packedPairs >> 4
       val pairCount1 = packedPairs & 0xf
-
-      if packedPairs == 0 then return None
 
       val unity0 = buf.readU16BE()
       val unity1 = buf.readU16BE()
@@ -140,16 +153,22 @@ object SynthReader:
           Some(readEnvelopeSegments())
         else None
 
-      if buf.truncated then
+      if buf.isTruncated then
         warnings += "Filter truncated (discarding partial data)"
         None
       else
+        val freqIArray = IArray.tabulate(2)(d =>
+          IArray.tabulate(2)(p => IArray.tabulate(4)(i => frequencies(d)(p)(i)))
+        )
+        val magIArray = IArray.tabulate(2)(d =>
+          IArray.tabulate(2)(p => IArray.tabulate(4)(i => magnitudes(d)(p)(i)))
+        )
         Some(
           Filter(
-            Array(pairCount0, pairCount1),
-            Array(unity0, unity1),
-            frequencies,
-            magnitudes,
+            IArray(pairCount0, pairCount1),
+            IArray(unity0, unity1),
+            freqIArray,
+            magIArray,
             envelope
           )
         )
@@ -185,7 +204,7 @@ object SynthReader:
         val env2 = readEnvelope()
         (Some(env1), Some(env2))
       else
-        buf.pos += 1 // eat '0' flag
+        buf.skip(1) // eat '0' flag
         (None, None)
 
     private def readHarmonics(): Vector[Harmonic] =
