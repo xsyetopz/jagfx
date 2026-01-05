@@ -55,3 +55,54 @@ object DrawingUtils:
 
   def clear(buffer: Array[Int], color: Int): Unit =
     Arrays.fill(buffer, color)
+
+  inline def setPixel(
+      buffer: Array[Int],
+      w: Int,
+      h: Int,
+      x: Int,
+      y: Int,
+      color: Int
+  ): Unit =
+    if x >= 0 && x < w && y >= 0 && y < h then buffer(y * w + x) = color
+
+  def fillCircle(
+      buffer: Array[Int],
+      w: Int,
+      h: Int,
+      cx: Int,
+      cy: Int,
+      r: Int,
+      color: Int
+  ): Unit =
+    for dy <- -r to r do
+      for dx <- -r to r do
+        if dx * dx + dy * dy <= r * r then
+          setPixel(buffer, w, h, cx + dx, cy + dy, color)
+
+  def drawCircle(
+      buffer: Array[Int],
+      w: Int,
+      h: Int,
+      cx: Int,
+      cy: Int,
+      r: Int,
+      color: Int
+  ): Unit =
+    var x = r
+    var y = 0
+    var err = 0
+    while x >= y do
+      setPixel(buffer, w, h, cx + x, cy + y, color)
+      setPixel(buffer, w, h, cx + y, cy + x, color)
+      setPixel(buffer, w, h, cx - y, cy + x, color)
+      setPixel(buffer, w, h, cx - x, cy + y, color)
+      setPixel(buffer, w, h, cx - x, cy - y, color)
+      setPixel(buffer, w, h, cx - y, cy - x, color)
+      setPixel(buffer, w, h, cx + y, cy - x, color)
+      setPixel(buffer, w, h, cx + x, cy - y, color)
+      y += 1
+      err += 1 + 2 * y
+      if 2 * (err - x) + 1 > 0 then
+        x -= 1
+        err += 1 - 2 * x
