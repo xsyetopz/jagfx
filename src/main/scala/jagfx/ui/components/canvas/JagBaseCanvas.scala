@@ -6,8 +6,7 @@ import javafx.scene.input._
 import javafx.animation.AnimationTimer
 import jagfx.utils.ColorUtils._
 import jagfx.utils.DrawingUtils._
-
-private val MinFrameNanos = 16_666_666L
+import jagfx.Constants.MinFrameNanos
 
 /** Base canvas with throttled rendering and buffer management. */
 abstract class JagBaseCanvas extends Canvas:
@@ -18,8 +17,8 @@ abstract class JagBaseCanvas extends Canvas:
   protected var zoomLevel: Int = 1
   protected var panOffset: Int = 0
 
-  @volatile private var dirty = false
-  @volatile private var resizePending = false
+  @volatile private var _dirty = false
+  @volatile private var _resizePending = false
 
   setWidth(200)
   setHeight(100)
@@ -27,10 +26,10 @@ abstract class JagBaseCanvas extends Canvas:
   private val redrawTimer = new AnimationTimer:
     private var lastFrame = 0L
     def handle(now: Long): Unit =
-      if dirty && now - lastFrame >= MinFrameNanos then
-        dirty = false
+      if _dirty && now - lastFrame >= MinFrameNanos then
+        _dirty = false
         lastFrame = now
-        performDraw()
+        _performDraw()
 
   redrawTimer.start()
 
@@ -43,9 +42,9 @@ abstract class JagBaseCanvas extends Canvas:
   def getPanOffset: Int = panOffset
 
   /** Requests redraw on next animation frame. */
-  def requestRedraw(): Unit = dirty = true
+  def requestRedraw(): Unit = _dirty = true
 
-  private def performDraw(): Unit =
+  private def _performDraw(): Unit =
     val w = getWidth.toInt
     val h = getHeight.toInt
     if w <= 0 || h <= 0 then return
@@ -93,29 +92,29 @@ abstract class JagBaseCanvas extends Canvas:
       e.consume()
   }
 
-  private var dragStartX: Double = 0
-  private var dragStartPan: Int = 0
+  private var _dragStartX: Double = 0
+  private var _dragStartPan: Int = 0
 
   setOnMousePressed { (e: MouseEvent) =>
     if zoomLevel > 1 then
-      dragStartX = e.getX
-      dragStartPan = panOffset
+      _dragStartX = e.getX
+      _dragStartPan = panOffset
   }
 
   setOnMouseDragged { (e: MouseEvent) =>
     if zoomLevel > 1 then
-      val delta = (dragStartX - e.getX).toInt
-      setPan(dragStartPan + delta)
+      val delta = (_dragStartX - e.getX).toInt
+      setPan(_dragStartPan + delta)
   }
 
-  private def scheduleResize(): Unit =
-    if !resizePending then
-      resizePending = true
+  private def _scheduleResize(): Unit =
+    if !_resizePending then
+      _resizePending = true
       javafx.application.Platform.runLater { () =>
-        resizePending = false
+        _resizePending = false
         resizeBuffer(getWidth.toInt, getHeight.toInt)
         requestRedraw()
       }
 
-  widthProperty.addListener((_, _, _) => scheduleResize())
-  heightProperty.addListener((_, _, _) => scheduleResize())
+  widthProperty.addListener((_, _, _) => _scheduleResize())
+  heightProperty.addListener((_, _, _) => _scheduleResize())
