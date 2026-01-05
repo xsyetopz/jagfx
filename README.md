@@ -61,7 +61,7 @@ Output will be in `target/scala-3.7.4/jagfx-assembly-<version>.jar`.
 sbt dist
 ```
 
-Creates `target/universal/jagfx-1.0.0.zip` with platform launchers for macOS, Linux, and Windows.
+Creates `target/universal/jagfx-<version>.zip` with platform launchers for macOS, Linux, and Windows.
 
 ## Project Structure
 
@@ -93,7 +93,9 @@ src/main/scala/jagfx/
 
 This project is licensed under MIT License. See [LICENSE](LICENSE) file for more details.
 
-### Special Thanks
+---
+
+## Special Thanks
 
 [Lost City](https://github.com/LostCityRS) - For having different client versions of `.synth` files
 
