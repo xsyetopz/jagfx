@@ -1,12 +1,15 @@
 package jagfx.synth
 
-import java.util.concurrent.ConcurrentLinkedQueue
 import java.util.Arrays
-import jagfx.constants.{MaxPoolSize, MaxBufferSize}
+import java.util.concurrent.ConcurrentLinkedQueue
+
+import jagfx.Constants.MaxBufferSize
+import jagfx.Constants.MaxPoolSize
 
 /** Thread-safe pool for reusable integer arrays. */
 object BufferPool:
-  private val _pool = new ConcurrentLinkedQueue[(Int, Array[Int])]()
+  // Fields
+  private val pool = new ConcurrentLinkedQueue[(Int, Array[Int])]()
 
   /** Acquires buffer of at least `minSize` elements, zero-filled. */
   def acquire(minSize: Int): Array[Int] =
@@ -15,11 +18,11 @@ object BufferPool:
     var best: Option[Array[Int]] = None
     var bestSize = Int.MaxValue
 
-    val iter = _pool.iterator()
+    val iter = pool.iterator()
     while iter.hasNext do
       val (size, buf) = iter.next()
       if size >= minSize && size < bestSize then
-        if _pool.remove((size, buf)) then
+        if pool.remove((size, buf)) then
           best = Some(buf)
           bestSize = size
 
@@ -29,8 +32,8 @@ object BufferPool:
 
   /** Returns buffer to pool for reuse. */
   def release(buffer: Array[Int]): Unit =
-    if buffer.length <= MaxBufferSize && _pool.size() < MaxPoolSize then
-      _pool.offer((buffer.length, buffer))
+    if buffer.length <= MaxBufferSize && pool.size() < MaxPoolSize then
+      pool.offer((buffer.length, buffer))
 
   /** Clears all pooled buffers. */
-  def clear(): Unit = _pool.clear()
+  def clear(): Unit = pool.clear()

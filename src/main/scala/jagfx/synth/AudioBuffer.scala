@@ -1,17 +1,9 @@
 package jagfx.synth
 
-import jagfx.constants
-import jagfx.constants.SampleRate
+import jagfx.Constants.SampleRate
 import jagfx.utils.MathUtils
 
-/** Container for synthesized audio samples with mixing and conversion
-  * operations.
-  *
-  * @param samples
-  *   16-bit signed PCM samples
-  * @param sampleRate
-  *   Samples per second (default `22050` Hz)
-  */
+/** Container for synthesized audio samples with mixing and conversion. */
 class AudioBuffer(val samples: Array[Int], val sampleRate: Int = SampleRate):
   /** Returns number of samples in buffer. */
   def length: Int = samples.length
@@ -26,7 +18,7 @@ class AudioBuffer(val samples: Array[Int], val sampleRate: Int = SampleRate):
       if pos >= 0 && pos < maxLen then result(pos) += other.samples(i)
     AudioBuffer(result, sampleRate)
 
-  /** Clips samples to 16-bit signed range (`-32768` to `32767`). */
+  /** Clips samples to 16-bit signed range. */
   def clip(): AudioBuffer =
     val newSamples = samples.clone()
     MathUtils.clipInt16(newSamples)
@@ -56,7 +48,6 @@ class AudioBuffer(val samples: Array[Int], val sampleRate: Int = SampleRate):
       result(i * 2 + 1) = (samples(i) >> 8).toByte
     result
 
-/** AudioBuffer factory methods. */
 object AudioBuffer:
   /** Creates zero-filled buffer with specified sample count. */
   def empty(sampleCount: Int, sampleRate: Int = SampleRate): AudioBuffer =
