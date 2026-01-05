@@ -6,7 +6,7 @@ import javafx.beans.property._
 private val KeyExport16Bit = "export_16_bit"
 
 /** Handles persistent user preferences using `java.util.prefs`. */
-object UserPreferences:
+object UserPrefs:
   private val prefs = Preferences.userNodeForPackage(getClass)
 
   val export16Bit: BooleanProperty =
