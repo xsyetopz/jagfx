@@ -92,3 +92,9 @@ src/main/scala/jagfx/
 ## License
 
 This project is licensed under MIT License. See [LICENSE](LICENSE) file for more details.
+
+### Special Thanks
+
+[Lost City](https://github.com/LostCityRS) - For having different client versions of `.synth` files
+
+[OpenOSRS](https://github.com/open-osrs/runelite/tree/master/runescape-client) - For decompiled and partially deobfuscated files related to `.synth` format and IIR filter
