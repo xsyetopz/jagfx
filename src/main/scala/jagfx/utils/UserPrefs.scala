@@ -1,16 +1,20 @@
 package jagfx.utils
 
 import java.util.prefs.Preferences
-import javafx.beans.property._
+import javafx.beans.property.*
 
-private val _KeyExport16Bit = "export_16_bit"
+private val KeyExport16Bit = "export_16_bit"
 
 /** Handles persistent user preferences using `java.util.prefs`. */
 object UserPrefs:
-  private val _prefs = Preferences.userNodeForPackage(getClass)
+  // Fields
+  private val prefs = Preferences.userNodeForPackage(getClass)
 
+  /** Export bit depth preference (`false`=8-bit, `true`=16-bit). */
   val export16Bit: BooleanProperty =
-    new SimpleBooleanProperty(_prefs.getBoolean(_KeyExport16Bit, false))
+    new SimpleBooleanProperty(prefs.getBoolean(KeyExport16Bit, false))
+
+  // Init: listeners
   export16Bit.addListener((_, _, newVal) =>
-    _prefs.putBoolean(_KeyExport16Bit, newVal)
+    prefs.putBoolean(KeyExport16Bit, newVal)
   )

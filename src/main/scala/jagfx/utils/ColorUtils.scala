@@ -1,6 +1,6 @@
 package jagfx.utils
 
-/** Colors synced with `_variables.scss`. */
+/** Colors synced with `variables.scss`. */
 object ColorUtils:
   // Backgrounds
   val BgBlack: Int = 0xff000000
@@ -12,16 +12,16 @@ object ColorUtils:
   val White: Int = 0xfff0f0f0
 
   // Accent
-  val Graph: Int = 0xffee7733 // $bg-graph (envelope curves)
+  val Graph: Int = 0xffee7733
 
   // Filter
-  val FilterPole: Int = 0xff009e73 // $color-info teal for poles
-  val FilterZero: Int = 0xffee7733 // $bg-graph orange for zeros
-  val FilterResponse: Int = 0xff33bb99 // frequency response curve
+  val FilterPole: Int = 0xff009e73
+  val FilterZero: Int = 0xffee7733
+  val FilterResponse: Int = 0xff33bb99
 
   // Semantic
-  val Output: Int = 0xff009e73 // $color-output
-  val Gating: Int = 0xffcc79a7 // $color-gating
+  val Output: Int = 0xff009e73
+  val Gating: Int = 0xffcc79a7
 
   // Grid
   val GridLineFaint: Int = 0xff2a2a2a

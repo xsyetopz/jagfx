@@ -2,6 +2,7 @@ package jagfx.utils
 
 import org.kordamp.ikonli.javafx.FontIcon
 
+/** Icon factory using MaterialDesign2 Ikonli icons. */
 object IconUtils:
   /** Creates `FontIcon` from literal string description using MaterialDesign2.
     * This uses raw string code (e.g. `"mdi2-play"`).

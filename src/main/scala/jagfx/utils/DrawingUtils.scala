@@ -2,12 +2,13 @@ package jagfx.utils
 
 import java.util.Arrays
 
+/** Drawing utilities for raw ARGB pixel buffers. */
 object DrawingUtils:
   /** Draws line into raw ARGB pixel buffer using Bresenham's algorithm. */
   def line(
       buffer: Array[Int],
-      w: Int,
-      h: Int,
+      width: Int,
+      height: Int,
       x0: Int,
       y0: Int,
       x1: Int,
@@ -22,7 +23,8 @@ object DrawingUtils:
     var err = dx - dy
 
     while x != x1 || y != y1 do
-      if x >= 0 && x < w && y >= 0 && y < h then buffer(y * w + x) = color
+      if x >= 0 && x < width && y >= 0 && y < height then
+        buffer(y * width + x) = color
 
       val e2 = 2 * err
       if e2 > -dy then
@@ -32,12 +34,14 @@ object DrawingUtils:
         err += dx
         y += sy
 
-    if x >= 0 && x < w && y >= 0 && y < h then buffer(y * w + x) = color
+    if x >= 0 && x < width && y >= 0 && y < height then
+      buffer(y * width + x) = color
 
+  /** Fills rectangle into raw ARGB pixel buffer. */
   def fillRect(
       buffer: Array[Int],
-      w: Int,
-      h: Int,
+      width: Int,
+      height: Int,
       rx: Int,
       ry: Int,
       rw: Int,
@@ -46,30 +50,34 @@ object DrawingUtils:
   ): Unit =
     val updateMinX = math.max(0, rx)
     val updateMinY = math.max(0, ry)
-    val updateMaxX = math.min(w, rx + rw)
-    val updateMaxY = math.min(h, ry + rh)
+    val updateMaxX = math.min(width, rx + rw)
+    val updateMaxY = math.min(height, ry + rh)
     if updateMinX < updateMaxX && updateMinY < updateMaxY then
       for y <- updateMinY until updateMaxY do
-        var rowOffset = y * w
+        val rowOffset = y * width
         for x <- updateMinX until updateMaxX do buffer(rowOffset + x) = color
 
+  /** Clears buffer with specified color. */
   def clear(buffer: Array[Int], color: Int): Unit =
     Arrays.fill(buffer, color)
 
+  /** Sets pixel at specified coordinates. */
   inline def setPixel(
       buffer: Array[Int],
-      w: Int,
-      h: Int,
+      width: Int,
+      height: Int,
       x: Int,
       y: Int,
       color: Int
   ): Unit =
-    if x >= 0 && x < w && y >= 0 && y < h then buffer(y * w + x) = color
+    if x >= 0 && x < width && y >= 0 && y < height then
+      buffer(y * width + x) = color
 
+  /** Fills circle into raw ARGB pixel buffer. */
   def fillCircle(
       buffer: Array[Int],
-      w: Int,
-      h: Int,
+      width: Int,
+      height: Int,
       cx: Int,
       cy: Int,
       r: Int,
@@ -78,12 +86,13 @@ object DrawingUtils:
     for dy <- -r to r do
       for dx <- -r to r do
         if dx * dx + dy * dy <= r * r then
-          setPixel(buffer, w, h, cx + dx, cy + dy, color)
+          setPixel(buffer, width, height, cx + dx, cy + dy, color)
 
+  /** Draws circle into raw ARGB pixel buffer. */
   def drawCircle(
       buffer: Array[Int],
-      w: Int,
-      h: Int,
+      width: Int,
+      height: Int,
       cx: Int,
       cy: Int,
       r: Int,
@@ -93,14 +102,14 @@ object DrawingUtils:
     var y = 0
     var err = 0
     while x >= y do
-      setPixel(buffer, w, h, cx + x, cy + y, color)
-      setPixel(buffer, w, h, cx + y, cy + x, color)
-      setPixel(buffer, w, h, cx - y, cy + x, color)
-      setPixel(buffer, w, h, cx - x, cy + y, color)
-      setPixel(buffer, w, h, cx - x, cy - y, color)
-      setPixel(buffer, w, h, cx - y, cy - x, color)
-      setPixel(buffer, w, h, cx + y, cy - x, color)
-      setPixel(buffer, w, h, cx + x, cy - y, color)
+      setPixel(buffer, width, height, cx + x, cy + y, color)
+      setPixel(buffer, width, height, cx + y, cy + x, color)
+      setPixel(buffer, width, height, cx - y, cy + x, color)
+      setPixel(buffer, width, height, cx - x, cy + y, color)
+      setPixel(buffer, width, height, cx - x, cy - y, color)
+      setPixel(buffer, width, height, cx - y, cy - x, color)
+      setPixel(buffer, width, height, cx + y, cy - x, color)
+      setPixel(buffer, width, height, cx + x, cy - y, color)
       y += 1
       err += 1 + 2 * y
       if 2 * (err - x) + 1 > 0 then
