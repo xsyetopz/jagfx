@@ -27,8 +27,12 @@ class JagCellPane(title: String) extends StackPane:
 
   // IF container (or trans child) clicked, THEN fire on 'StackPane`
   container.setOnMouseClicked(e =>
-    this.fireEvent(e.copyFor(this, this))
-    e.consume()
+    if e.getClickCount == 2 then
+      _onMaximizeToggle.foreach(_())
+      e.consume()
+    else
+      this.fireEvent(e.copyFor(this, this))
+      e.consume()
   )
 
   private val _header = HBox()
@@ -50,11 +54,7 @@ class JagCellPane(title: String) extends StackPane:
   def setOnMaximizeToggle(handler: () => Unit): Unit =
     _onMaximizeToggle = Some(handler)
 
-  _titleLabel.setOnMouseClicked(e =>
-    if e.getClickCount == 2 then
-      _onMaximizeToggle.foreach(_())
-      e.consume()
-  )
+  _titleLabel.setOnMouseClicked(e => if e.getClickCount == 2 then e.consume())
 
   private val _toolbar = HBox()
   _toolbar.setSpacing(1)
