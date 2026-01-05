@@ -12,13 +12,14 @@ class AudioBufferSuite extends munit.FunSuite:
     assertEquals(buf.sampleRate, Constants.SampleRate)
 
   test("clip limits samples to 16-bit range"):
-    val samples = Array(-50000, Int16.Min, 0, Int16.Max, 50000)
+    val samples =
+      Array(-50000, Short.MinValue.toInt, 0, Short.MaxValue.toInt, 50000)
     val buf = AudioBuffer(samples, Constants.SampleRate).clip()
-    assertEquals(buf.samples(0), Int16.Min)
-    assertEquals(buf.samples(1), Int16.Min)
+    assertEquals(buf.samples(0), Short.MinValue.toInt)
+    assertEquals(buf.samples(1), Short.MinValue.toInt)
     assertEquals(buf.samples(2), 0)
-    assertEquals(buf.samples(3), Int16.Max)
-    assertEquals(buf.samples(4), Int16.Max)
+    assertEquals(buf.samples(3), Short.MaxValue.toInt)
+    assertEquals(buf.samples(4), Short.MaxValue.toInt)
 
   test("mix combines two buffers"):
     val buf1 = AudioBuffer(Array(100, 200, 300), Constants.SampleRate)
@@ -31,6 +32,9 @@ class AudioBufferSuite extends munit.FunSuite:
   test("toBytesUnsigned converts to 8-bit unsigned"):
     val buf = AudioBuffer(Array(0, 256, -256), Constants.SampleRate)
     val bytes = buf.toBytesUnsigned
-    assertEquals(bytes(0) & 0xff, 128) // 0 -> 128 (silence)
-    assertEquals(bytes(1) & 0xff, 129) // +256 -> 129
-    assertEquals(bytes(2) & 0xff, 127) // -256 -> 127
+    assertEquals(
+      bytes(0) & 0xff,
+      Byte.MaxValue + 1
+    ) // 0 -> 128 (silence)
+    assertEquals(bytes(1) & 0xff, Byte.MaxValue + 2) // +256 -> 129
+    assertEquals(bytes(2) & 0xff, Byte.MaxValue.toInt) // -256 -> 127
