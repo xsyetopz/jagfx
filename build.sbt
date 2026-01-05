@@ -5,10 +5,12 @@ Global / onChangedBuildSource := ReloadOnSourceChanges
 Global / excludeLintKeys += Universal / libraryDependencies
 
 ThisBuild / organization := "jagfx"
-ThisBuild / version := "1.2.0"
+ThisBuild / version := "1.3.0"
 ThisBuild / scalaVersion := "3.7.4"
 
 ThisBuild / semanticdbEnabled := true
+
+ThisBuild / scalacOptions ++= Seq("-Wunused:all")
 
 val javaFxVersion = "23.0.1"
 val logbackVersion = "1.5.23"
