@@ -37,7 +37,7 @@ This guide keeps expectations clear and simple so you can move fast without gues
 
 ## Using AI Assistants
 
-No AI configuration files live in repository yet, but you may use own tools. You remain responsible for code quality:
+`AGENTS.md` exists in our codebase, but you may use own tools. You remain responsible for code quality:
 
 - Understand surrounding code before pasting AI suggestions.
 - Review and test generated code carefully.
