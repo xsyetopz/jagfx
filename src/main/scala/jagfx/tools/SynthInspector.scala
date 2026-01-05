@@ -2,7 +2,8 @@ package jagfx.tools
 
 import jagfx.io.BinaryBuffer
 import jagfx.model._
-import java.nio.file.{Files, Paths}
+import jagfx.types._
+import java.nio.file._
 import jagfx.Constants
 
 object SynthInspector:
@@ -33,7 +34,7 @@ object SynthInspector:
     catch
       case e: Exception =>
         println(
-          s"\n[ERROR] PARSING FAILED AT OFFSET ${buf.pos}: ${e.getMessage}"
+          s"\n[ERROR] PARSING FAILED AT OFFSET ${buf.position}: ${e.getMessage}"
         )
         e.printStackTrace()
         println("REMAINING CONTEXT:")
@@ -43,13 +44,13 @@ object SynthInspector:
     for i <- 0 until 10 do
       if buf.remaining > 0 then
         val valid = buf.peek() != 0
-        println(f"\n=== TONE $i (OFFSET: ${buf.pos}%04X) ===")
+        println(f"\n=== TONE $i (OFFSET: ${buf.position}%04X) ===")
 
         val marker = buf.peek()
         println(f"HEADER MARKER: $marker (VALID: ${marker != 0})")
         if marker != 0 then inspectTone(buf)
         else
-          buf.readU8("EMPTY MARKER")
+          buf.readUInt8("EMPTY MARKER")
           println(s"Tone $i empty")
       else
         // println(s"Tone $i: EOF reached unexpectedly (Truncated Tone Loop?)")
@@ -72,21 +73,21 @@ object SynthInspector:
     inspectPartials(buf)
 
     println("--- PARAMETERS ---")
-    buf.readSmartUnsigned("ECHO DEL")
-    buf.readSmartUnsigned("ECHO MIX")
-    buf.readU16BE("DURATION")
-    buf.readU16BE("START")
+    buf.readUSmart("ECHO DEL")
+    buf.readUSmart("ECHO MIX")
+    buf.readUInt16BE("DURATION")
+    buf.readUInt16BE("START")
 
     inspectFilter(buf)
 
   def inspectEnvelope(buf: DebugBuffer): Unit =
-    val formId = buf.readU8("FORM ID")
-    val start = buf.readS32BE("START VAL")
-    val end = buf.readS32BE("END VAL")
-    val segLen = buf.readU8("SEG COUNT")
+    val waveformId = buf.readUInt8("WAVEFORM ID")
+    val start = buf.readInt32BE("START VAL")
+    val end = buf.readInt32BE("END VAL")
+    val segLen = buf.readUInt8("SEG COUNT")
     for i <- 0 until segLen do
-      buf.readU16BE(s"SEG $i DUR")
-      buf.readU16BE(s"SEG $i PEAK")
+      buf.readUInt16BE(s"SEG $i DUR")
+      buf.readUInt16BE(s"SEG $i PEAK")
 
   def inspectOptionalEnvelopePair(buf: DebugBuffer): Unit =
     val marker = buf.peek()
@@ -96,7 +97,7 @@ object SynthInspector:
       inspectEnvelope(buf)
       println("  READING ENVELOPE 2:")
       inspectEnvelope(buf)
-    else buf.readU8("EMPTY MARKER")
+    else buf.readUInt8("EMPTY MARKER")
 
   def inspectPartials(buf: DebugBuffer): Unit =
     println("--- PARTIALS ---")
@@ -121,7 +122,7 @@ object SynthInspector:
       println("  EOF reached before Filter read")
       return
 
-    val packed = buf.readU8("PACKED PAIRS")
+    val packed = buf.readUInt8("PACKED PAIRS")
     val pair0 = packed >> 4
     val pair1 = packed & 0xf
     println(s"  PAIRS: $pair0, $pair1")
@@ -130,25 +131,25 @@ object SynthInspector:
       println("  FILTER EMPTY (PAIRS=0)")
       return
 
-    val unity0 = buf.readU16BE("UNITY 0")
-    val unity1 = buf.readU16BE("UNITY 1")
-    val modMask = buf.readU8("MOD MASK")
+    val unity0 = buf.readUInt16BE("UNITY 0")
+    val unity1 = buf.readUInt16BE("UNITY 1")
+    val modMask = buf.readUInt8("MOD MASK")
     println(s"  MOD MASK: $modMask")
 
     for ch <- 0 until 2 do
       val pairs = if ch == 0 then pair0 else pair1
       println(s"  CHANNEL $ch (PAIRS: $pairs):")
       for p <- 0 until pairs do
-        buf.readU16BE(s"    FREQ $p")
-        buf.readU16BE(s"    MAG $p")
+        buf.readUInt16BE(s"    FREQ $p")
+        buf.readUInt16BE(s"    MAG $p")
 
     for ch <- 0 until 2 do
       val pairs = if ch == 0 then pair0 else pair1
       println(s"  CHANNEL $ch MODULATION:")
       for p <- 0 until pairs do
         if (modMask & (1 << (ch * 4) << p)) != 0 then
-          buf.readU16BE(s"    FREQ MOD $p")
-          buf.readU16BE(s"    MAG MOD $p")
+          buf.readUInt16BE(s"    FREQ MOD $p")
+          buf.readUInt16BE(s"    MAG MOD $p")
         else println(s"    MOD $p SKIPPED (MASK 0)")
 
     if modMask != 0 || unity1 != unity0 then
@@ -157,43 +158,43 @@ object SynthInspector:
     else println("FILTER ENVELOPE SKIPPED")
 
   def inspectEnvelopeSegments(buf: DebugBuffer): Unit =
-    val length = buf.readU8("SEG COUNT")
+    val length = buf.readUInt8("SEG COUNT")
     for i <- 0 until length do
-      buf.readU16BE(s"SEG $i DUR")
-      buf.readU16BE(s"SEG $i PEAK")
+      buf.readUInt16BE(s"SEG $i DUR")
+      buf.readUInt16BE(s"SEG $i PEAK")
 
 class DebugBuffer(data: Array[Byte]) extends BinaryBuffer(data):
-  def readU8(label: String): Int =
-    val v = super.readU8()
+  def readUInt8(label: String): Int =
+    val v = super.readUInt8()
     _log(1, label, v)
     v
-  def readS32BE(label: String): Int =
-    val v = super.readS32BE()
+  def readInt32BE(label: String): Int =
+    val v = super.readInt32BE()
     _log(4, label, v)
     v
-  def readU16BE(label: String): Int =
-    val v = super.readU16BE()
+  def readUInt16BE(label: String): Int =
+    val v = super.readUInt16BE()
     _log(2, label, v)
     v
-  def readSmart(label: String): Int =
-    val startPos = pos
+  def readSmart(label: String): Smart =
+    val startPos = position
     val v = super.readSmart()
-    val len = pos - startPos
+    val len = position - startPos
     _log(len, label, v)
     v
-  def readSmartUnsigned(label: String): Int =
-    val startPos = pos
-    val v = super.readSmartUnsigned()
-    val len = pos - startPos
+  def readUSmart(label: String): USmart =
+    val startPos = position
+    val v = super.readUSmart()
+    val len = position - startPos
     _log(len, label, v)
     v
 
   private def _log(len: Int, label: String, value: Any): Unit =
-    val offsetStr = f"[${pos - len}%04X]"
+    val offsetStr = f"[${position - len}%04X]"
     val hex =
       (0 until len)
         .map { i =>
-          val p = pos - len + i
+          val p = position - len + i
           if p >= 0 && p < data.length then "%02X".format(data(p))
           else "??"
         }
@@ -204,5 +205,5 @@ class DebugBuffer(data: Array[Byte]) extends BinaryBuffer(data):
 
   def dumpRemaining(offset: Int = 0, limit: Int = -1): String =
     val count = if limit < 0 then remaining else math.min(limit, remaining)
-    val chunk = data.slice(pos + offset, pos + offset + count)
+    val chunk = data.slice(position + offset, position + offset + count)
     chunk.map("%02X".format(_)).mkString(" ")

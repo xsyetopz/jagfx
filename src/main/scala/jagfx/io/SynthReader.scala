@@ -1,5 +1,6 @@
 package jagfx.io
 
+import jagfx.types._
 import jagfx.model._
 import jagfx.Constants.{MaxTones, MaxPartials}
 import java.nio.file._
@@ -39,7 +40,7 @@ object SynthReader:
 
         val loopParams =
           if buf.remaining >= 4 then
-            LoopParams(buf.readU16BE(), buf.readU16BE())
+            LoopParams(buf.readUInt16BE(), buf.readUInt16BE())
           else
             _warnings += "File truncated; defaulting loop parameters..."
             LoopParams(0, 0)
@@ -48,10 +49,10 @@ object SynthReader:
       catch
         case e: Exception =>
           scribe.error(
-            s"Parse failed at pos ${buf.pos}: ${e.getClass.getName} ${e.getMessage}"
+            s"Parse failed at pos ${buf.position}: ${e.getClass.getName} ${e.getMessage}"
           )
           e.printStackTrace()
-          Left(ParseError(e.getMessage, buf.pos))
+          Left(ParseError(e.getMessage, buf.position))
 
     private def _readTones(): Vector[Option[Tone]] =
       // Rev377 files have 0x00 padding bytes after each tone's data
@@ -79,10 +80,10 @@ object SynthReader:
       val (gateRelease, gateAttack) = _readOptionalEnvelopePair()
 
       val partials = _readPartials()
-      val echoDelay = buf.readSmartUnsigned()
-      val echoMix = buf.readSmartUnsigned()
-      val duration = buf.readU16BE()
-      val start = buf.readU16BE()
+      val echoDelay = buf.readUSmart().value
+      val echoMix = buf.readUSmart().value
+      val duration = buf.readUInt16BE()
+      val start = buf.readUInt16BE()
       val filter = _readFilter()
 
       def fixEnvelope(env: Envelope, dur: Int): Envelope =
@@ -111,24 +112,24 @@ object SynthReader:
       if buf.remaining == 0 then return None
 
       // Rev377 uses 0x00 as explicit "no filter" marker
-      // Rev245 has no marker as tones end directly before next FormID
+      // Rev245 has no marker as tones end directly before next WaveformID
       val peeked = buf.peek()
       if peeked == 0 then
         buf.skip(1) // consume Rev377's "no filter" marker
         return None
       if peeked >= 1 && peeked <= 4 then
-        // next tone's FormID, not filter - leave alone
+        // next tone's WaveformID, not filter - leave alone
         return None
 
       val wasTruncated = buf.isTruncated
 
-      val packedPairs = buf.readU8()
+      val packedPairs = buf.readUInt8()
       val pairCount0 = packedPairs >> 4
       val pairCount1 = packedPairs & 0xf
 
-      val unity0 = buf.readU16BE()
-      val unity1 = buf.readU16BE()
-      val modulationMask = buf.readU8()
+      val unity0 = buf.readUInt16BE()
+      val unity1 = buf.readUInt16BE()
+      val modulationMask = buf.readUInt8()
 
       val frequencies = Array.ofDim[Int](2, 2, 4)
       val magnitudes = Array.ofDim[Int](2, 2, 4)
@@ -136,14 +137,14 @@ object SynthReader:
       for channel <- 0 until 2 do
         val pairs = if channel == 0 then pairCount0 else pairCount1
         for p <- 0 until pairs do
-          frequencies(channel)(0)(p) = buf.readU16BE()
-          magnitudes(channel)(0)(p) = buf.readU16BE()
+          frequencies(channel)(0)(p) = buf.readUInt16BE()
+          magnitudes(channel)(0)(p) = buf.readUInt16BE()
       for channel <- 0 until 2 do
         val pairs = if channel == 0 then pairCount0 else pairCount1
         for p <- 0 until pairs do
           if (modulationMask & (1 << (channel * 4) << p)) != 0 then
-            frequencies(channel)(1)(p) = buf.readU16BE()
-            magnitudes(channel)(1)(p) = buf.readU16BE()
+            frequencies(channel)(1)(p) = buf.readUInt16BE()
+            magnitudes(channel)(1)(p) = buf.readUInt16BE()
           else
             frequencies(channel)(1)(p) = frequencies(channel)(0)(p)
             magnitudes(channel)(1)(p) = magnitudes(channel)(0)(p)
@@ -174,23 +175,23 @@ object SynthReader:
         )
 
     private def _readEnvelope(): Envelope =
-      val formId = buf.readU8()
-      val start = buf.readS32BE()
-      val end = buf.readS32BE()
-      val waveform = Waveform.fromId(formId)
+      val waveformId = buf.readUInt8()
+      val start = buf.readInt32BE()
+      val end = buf.readInt32BE()
+      val waveform = Waveform.fromId(waveformId)
 
-      val segmentLength = buf.readU8()
+      val segmentLength = buf.readUInt8()
       val segments = (0 until segmentLength).map { _ =>
-        EnvelopeSegment(buf.readU16BE(), buf.readU16BE())
+        EnvelopeSegment(buf.readUInt16BE(), buf.readUInt16BE())
       }.toVector
 
       Envelope(waveform, start, end, segments)
 
     private def _readEnvelopeSegments(): Envelope =
-      val length = buf.readU8()
+      val length = buf.readUInt8()
       val segments = (0 until length).map { _ =>
-        val dur = buf.readU16BE()
-        val peak = buf.readU16BE()
+        val dur = buf.readUInt16BE()
+        val peak = buf.readUInt16BE()
         EnvelopeSegment(dur, peak)
       }.toVector
 
@@ -213,11 +214,11 @@ object SynthReader:
       var continue = true
       var count = 0
       while continue && count < MaxPartials do
-        val volume = buf.readSmartUnsigned()
+        val volume = buf.readUSmart().value
         if volume == 0 then continue = false
         else
-          val pitchOffset = buf.readSmart()
-          val startDelay = buf.readSmartUnsigned()
-          builder += Partial(volume, pitchOffset, startDelay)
+          val pitchOffset = buf.readSmart().value
+          val startDelay = buf.readUSmart().value
+          builder += Partial(Percent(volume), pitchOffset, Millis(startDelay))
           count += 1
       builder.result()

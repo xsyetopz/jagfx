@@ -116,8 +116,8 @@ class AudioPlayer(viewModel: SynthViewModel):
     val endMs = math.max(startMs, viewModel.loopEndProperty.get)
     if endMs <= startMs then return false
 
-    val startFrames = AudioUtils.msToSamples(startMs)
-    val endFrames = AudioUtils.msToSamples(endMs)
+    val startFrames = AudioUtils.msToSamples(startMs).value
+    val endFrames = AudioUtils.msToSamples(endMs).value
     val len = clip.getFrameLength
 
     val validEnd = math.min(endFrames, len - 1).toInt

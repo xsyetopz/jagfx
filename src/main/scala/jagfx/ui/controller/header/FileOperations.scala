@@ -73,7 +73,7 @@ class FileOperations(
           val audio = TrackSynthesizer.synthesize(viewModel.toModel(), 1)
           val is16Bit = UserPrefs.export16Bit.get
           val bytes =
-            if is16Bit then audio.toBytes16LE else audio.toBytesUnsigned
+            if is16Bit then audio.toBytes16LE else audio.toUBytes
           val bits = if is16Bit then 16 else 8
           val wav = WavWriter.write(bytes, bits)
           Files.write(path, wav)

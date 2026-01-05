@@ -1,6 +1,6 @@
 package jagfx.io
 
-import jagfx.Constants.Smart
+import jagfx.types._
 import jagfx.Constants
 
 /** Binary buffer for reading and writing primitive types with explicit
@@ -10,145 +10,150 @@ import jagfx.Constants
   *   Underlying byte array
   */
 class BinaryBuffer(val data: Array[Byte]):
-  private var _pos: Int = 0
+  private var _position: Int = 0
   private var _truncated: Boolean = false
 
   /** Current read/write position (read-only). */
-  def pos: Int = _pos
+  def position: Int = _position
 
   /** True if read operations have exceeded buffer length (EOF). */
   def isTruncated: Boolean = _truncated
 
   /** Advances position by `n` bytes without reading. */
-  def skip(n: Int): Unit = _pos += n
+  def skip(n: Int): Unit = _position += n
 
   /** Creates buffer with specified size. */
   def this(size: Int) = this(new Array[Byte](size))
 
   /** Returns remaining bytes from current position. */
-  def remaining: Int = data.length - _pos
+  def remaining: Int = data.length - _position
 
   /** Peeks at byte at current position without advancing. */
   def peek(): Int =
-    if _pos >= data.length then 0 else data(_pos) & 0xff
+    if _position >= data.length then 0 else data(_position) & 0xff
 
   /** Reads unsigned 8-bit integer, advances position by `1`. */
-  def readU8(): Int =
+  def readUInt8(): Int =
     if _checkTruncation(1) then 0
     else
-      val v = data(_pos) & 0xff
-      _pos += 1
+      val v = data(_position) & 0xff
+      _position += 1
       v
 
   /** Reads signed 8-bit integer, advances position by `1`. */
-  def readS8(): Int =
+  def readInt8(): Int =
     if _checkTruncation(1) then 0
     else
-      val v = data(_pos)
-      _pos += 1
+      val v = data(_position)
+      _position += 1
       v
 
   /** Reads unsigned 16-bit big-endian integer, advances position by `2`. */
-  def readU16BE(): Int =
+  def readUInt16BE(): Int =
     if _checkTruncation(2) then 0
     else
-      _pos += 2
-      ((data(_pos - 2) & 0xff) << 8) + (data(_pos - 1) & 0xff)
+      _position += 2
+      ((data(_position - 2) & 0xff) << 8) + (data(_position - 1) & 0xff)
 
   /** Reads unsigned 16-bit little-endian integer, advances position by `2`. */
-  def readU16LE(): Int =
+  def readUInt16LE(): Int =
     if _checkTruncation(2) then 0
     else
-      _pos += 2
-      (data(_pos - 2) & 0xff) + ((data(_pos - 1) & 0xff) << 8)
+      _position += 2
+      (data(_position - 2) & 0xff) + ((data(_position - 1) & 0xff) << 8)
 
   /** Reads signed 16-bit big-endian integer, advances position by `2`. */
-  def readS16BE(): Int =
+  def readInt16BE(): Int =
     if _checkTruncation(2) then 0
     else
       import Constants._
-      _pos += 2
-      var value = ((data(_pos - 2) & 0xff) << 8) + (data(_pos - 1) & 0xff)
+      _position += 2
+      var value =
+        ((data(_position - 2) & 0xff) << 8) + (data(_position - 1) & 0xff)
       if value > Short.MaxValue then value -= Int16.Range
       value
 
   /** Reads signed 32-bit big-endian integer, advances position by `4`. */
-  def readS32BE(): Int =
+  def readInt32BE(): Int =
     if _checkTruncation(4) then 0
     else
-      _pos += 4
-      ((data(_pos - 4) & 0xff) << 24) +
-        ((data(_pos - 3) & 0xff) << 16) +
-        ((data(_pos - 2) & 0xff) << 8) +
-        (data(_pos - 1) & 0xff)
+      _position += 4
+      ((data(_position - 4) & 0xff) << 24) +
+        ((data(_position - 3) & 0xff) << 16) +
+        ((data(_position - 2) & 0xff) << 8) +
+        (data(_position - 1) & 0xff)
 
   /** Reads signed variable-length smart integer (`1` or `2` bytes). */
-  def readSmart(): Int =
-    if remaining == 0 then return 0
+  def readSmart(): Smart =
+    if remaining == 0 then return Smart(0)
     val value = peek()
-    if value < Smart.Threshold then readU8() - Smart.SignedOffset
-    else readU16BE() - Smart.SignedBaseOffset
+    if value < Constants.Smart.Threshold then
+      Smart(readUInt8() - Constants.Smart.SignedOffset)
+    else Smart(readUInt16BE() - Constants.Smart.SignedBaseOffset)
 
   /** Reads unsigned variable-length smart integer (`1` or `2` bytes). */
-  def readSmartUnsigned(): Int =
+  def readUSmart(): USmart =
     import Constants._
-    if remaining == 0 then return 0
+    if remaining == 0 then return USmart(0)
     val value = peek()
-    if value < Smart.Threshold then readU8()
-    else readU16BE() - Int16.UnsignedMaxValue
+    if value < Constants.Smart.Threshold then USmart(readUInt8())
+    else USmart(readUInt16BE() - Int16.UnsignedMaxValue)
 
   /** Writes signed 32-bit big-endian integer, advances position by `4`. */
-  def writeS32BE(value: Int): Unit =
-    data(_pos) = (value >> 24).toByte
-    data(_pos + 1) = (value >> 16).toByte
-    data(_pos + 2) = (value >> 8).toByte
-    data(_pos + 3) = value.toByte
-    _pos += 4
+  def writeInt32BE(value: Int): Unit =
+    data(_position) = (value >> 24).toByte
+    data(_position + 1) = (value >> 16).toByte
+    data(_position + 2) = (value >> 8).toByte
+    data(_position + 3) = value.toByte
+    _position += 4
 
   /** Writes signed 32-bit little-endian integer, advances position by `4`. */
-  def writeS32LE(value: Int): Unit =
-    data(_pos) = value.toByte
-    data(_pos + 1) = (value >> 8).toByte
-    data(_pos + 2) = (value >> 16).toByte
-    data(_pos + 3) = (value >> 24).toByte
-    _pos += 4
+  def writeInt32LE(value: Int): Unit =
+    data(_position) = value.toByte
+    data(_position + 1) = (value >> 8).toByte
+    data(_position + 2) = (value >> 16).toByte
+    data(_position + 3) = (value >> 24).toByte
+    _position += 4
 
   /** Writes signed 16-bit little-endian integer, advances position by `2`. */
-  def writeS16LE(value: Int): Unit =
-    data(_pos) = value.toByte
-    data(_pos + 1) = (value >> 8).toByte
-    _pos += 2
+  def writeInt16LE(value: Int): Unit =
+    data(_position) = value.toByte
+    data(_position + 1) = (value >> 8).toByte
+    _position += 2
 
   /** Writes unsigned 8-bit integer, advances position by `1`. */
-  def writeU8(value: Int): Unit =
-    data(_pos) = value.toByte
-    _pos += 1
+  def writeUInt8(value: Int): Unit =
+    data(_position) = value.toByte
+    _position += 1
 
   /** Writes unsigned 16-bit big-endian integer, advances position by `2`. */
-  def writeU16BE(value: Int): Unit =
-    data(_pos) = (value >> 8).toByte
-    data(_pos + 1) = value.toByte
-    _pos += 2
+  def writeUInt16BE(value: Int): Unit =
+    data(_position) = (value >> 8).toByte
+    data(_position + 1) = value.toByte
+    _position += 2
 
   /** Writes unsigned variable-length smart integer (`1` or `2` bytes). */
-  def writeSmartUnsigned(value: Int): Unit =
-    if value < Smart.Threshold then writeU8(value)
+  def writeUSmart(value: USmart): Unit =
+    val v = value.value
+    if v < Constants.Smart.Threshold then writeUInt8(v)
     else
-      writeU8((value >> 8) + Smart.Threshold)
-      writeU8(value & 0xff)
+      writeUInt8((v >> 8) + Constants.Smart.Threshold)
+      writeUInt8(v & 0xff)
 
   /** Writes signed variable-length smart integer (`1` or `2` bytes). */
-  def writeSmart(value: Int): Unit =
-    val adjusted = value + Smart.SignedOffset
-    if adjusted >= 0 && adjusted < Smart.Threshold then writeU8(adjusted)
+  def writeSmart(value: Smart): Unit =
+    val v = value.value
+    val adjusted = v + Constants.Smart.SignedOffset
+    if adjusted >= 0 && adjusted < Constants.Smart.Threshold then
+      writeUInt8(adjusted)
     else
-      val v = value + Smart.SignedBaseOffset
-      writeU8((v >> 8) & 0xff)
-      writeU8(v & 0xff)
+      val enc = v + Constants.Smart.SignedBaseOffset
+      writeUInt8((enc >> 8) & 0xff)
+      writeUInt8(enc & 0xff)
 
   private def _checkTruncation(bytes: Int): Boolean =
-    if _pos + bytes > data.length then
+    if _position + bytes > data.length then
       _truncated = true
-      _pos += bytes
+      _position += bytes
       true
     else false

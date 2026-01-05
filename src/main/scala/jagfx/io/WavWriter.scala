@@ -19,22 +19,22 @@ object WavWriter:
     val fileSize = HeaderSize - 8 + dataSize
     val buf = BinaryBuffer(HeaderSize + dataSize)
 
-    buf.writeS32BE(RiffMagic)
-    buf.writeS32LE(fileSize)
-    buf.writeS32BE(WaveMagic)
-    buf.writeS32BE(FmtMagic)
-    buf.writeS32LE(FmtChunkSize)
-    buf.writeS16LE(PcmFormat)
-    buf.writeS16LE(Constants.NumChannels)
-    buf.writeS32LE(Constants.SampleRate)
-    buf.writeS32LE(
+    buf.writeInt32BE(RiffMagic)
+    buf.writeInt32LE(fileSize)
+    buf.writeInt32BE(WaveMagic)
+    buf.writeInt32BE(FmtMagic)
+    buf.writeInt32LE(FmtChunkSize)
+    buf.writeInt16LE(PcmFormat)
+    buf.writeInt16LE(Constants.NumChannels)
+    buf.writeInt32LE(Constants.SampleRate)
+    buf.writeInt32LE(
       Constants.SampleRate * Constants.NumChannels * bitsPerSample / 8
     )
-    buf.writeS16LE(Constants.NumChannels * bitsPerSample / 8)
-    buf.writeS16LE(bitsPerSample)
-    buf.writeS32BE(DataMagic)
-    buf.writeS32LE(dataSize)
-    System.arraycopy(samples, 0, buf.data, buf.pos, dataSize)
+    buf.writeInt16LE(Constants.NumChannels * bitsPerSample / 8)
+    buf.writeInt16LE(bitsPerSample)
+    buf.writeInt32BE(DataMagic)
+    buf.writeInt32LE(dataSize)
+    System.arraycopy(samples, 0, buf.data, buf.position, dataSize)
     buf.data
 
   /** Writes audio samples to WAV file at specified path. */

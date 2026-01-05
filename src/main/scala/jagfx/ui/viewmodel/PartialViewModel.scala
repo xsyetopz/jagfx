@@ -1,6 +1,7 @@
 package jagfx.ui.viewmodel
 
 import javafx.beans.property._
+import jagfx.types._
 import jagfx.model.Partial
 
 /** `ViewModelLike` for `Partial` data. */
@@ -13,8 +14,8 @@ class PartialViewModel extends ViewModelLike:
   def load(h: Partial): Unit =
     active.set(true)
     pitchOffset.set(h.pitchOffset)
-    volume.set(h.volume)
-    startDelay.set(h.startDelay)
+    volume.set(h.volume.value)
+    startDelay.set(h.startDelay.value)
     notifyListeners()
 
   def clear(): Unit =
@@ -25,7 +26,7 @@ class PartialViewModel extends ViewModelLike:
     notifyListeners()
 
   def toModel(): Partial =
-    Partial(volume.get, pitchOffset.get, startDelay.get)
+    Partial(Percent(volume.get), pitchOffset.get, Millis(startDelay.get))
 
   override protected def registerPropertyListeners(cb: () => Unit): Unit =
     active.addListener((_, _, _) => cb())

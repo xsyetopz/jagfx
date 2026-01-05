@@ -38,6 +38,6 @@ object JagFXCli:
       case Right(synthFile) =>
         val activeToneCount = synthFile.activeTones.size
         val audio = TrackSynthesizer.synthesize(synthFile, loopCount)
-        val wavBytes = WavWriter.write(audio.toBytesUnsigned)
+        val wavBytes = WavWriter.write(audio.toUBytes)
         Files.write(outputPath, wavBytes)
         System.exit(0)

@@ -33,7 +33,7 @@ class AudioBuffer(val samples: Array[Int], val sampleRate: Int = SampleRate):
     AudioBuffer(newSamples, sampleRate)
 
   /** Converts 16-bit samples to 8-bit unsigned bytes. */
-  def toBytesUnsigned: Array[Byte] =
+  def toUBytes: Array[Byte] =
     samples.map(s => ((s >> 8) + Byte.MaxValue + 1).toByte)
 
   /** Converts 16-bit samples to 8-bit signed bytes. */

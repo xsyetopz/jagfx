@@ -1,5 +1,7 @@
 package jagfx.model
 
+import jagfx.types._
+
 /** Additive synthesis partial (partial overtone).
   *
   * @param volume
@@ -10,7 +12,7 @@ package jagfx.model
   *   Start delay in milliseconds
   */
 case class Partial(
-    volume: Int,
+    volume: Percent,
     pitchOffset: Int,
-    startDelay: Int
+    startDelay: Millis
 )

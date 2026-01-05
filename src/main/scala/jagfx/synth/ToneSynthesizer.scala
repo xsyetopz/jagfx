@@ -137,9 +137,9 @@ object ToneSynthesizer:
       )
     do
       val h = tone.partials(partial)
-      if h.volume != 0 then
-        delays(partial) = (h.startDelay * samplesPerStep).toInt
-        volumes(partial) = (h.volume << 14) / 100
+      if h.volume.value != 0 then
+        delays(partial) = (h.startDelay.value * samplesPerStep).toInt
+        volumes(partial) = (h.volume.value << 14) / 100
         semitones(partial) =
           ((tone.pitchEnvelope.end - tone.pitchEnvelope.start) * PhaseScale *
             LookupTables.getPitchMultiplier(
@@ -253,7 +253,7 @@ object ToneSynthesizer:
         tone.partials.length
       )
     do
-      if tone.partials(partial).volume != 0 then
+      if tone.partials(partial).volume.value != 0 then
         val position = sample + state.partialDelays(partial)
         if position >= 0 && position < sampleCount then
           buffer(position) += _generateSample(
