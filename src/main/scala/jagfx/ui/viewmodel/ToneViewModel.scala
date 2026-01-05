@@ -1,34 +1,62 @@
 package jagfx.ui.viewmodel
 
-import javafx.beans.property._
-import jagfx.model._
 import jagfx.constants
+import jagfx.model.*
+import jagfx.utils.ArrayUtils
+import javafx.beans.property.*
 
-/** `ViewModel` for single `Tone`. */
+/** View model for single `Tone`. */
 class ToneViewModel extends ViewModelLike:
+  // Fields
+
+  /** Whether this tone is enabled for synthesis. */
   val enabled = new SimpleBooleanProperty(false)
 
+  /** Pitch envelope view model. */
   val pitch = new EnvelopeViewModel()
+
+  /** Volume envelope view model. */
   val volume = new EnvelopeViewModel()
 
+  /** Vibrato rate modulation envelope. */
   val vibratoRate = new EnvelopeViewModel()
+
+  /** Vibrato depth modulation envelope. */
   val vibratoDepth = new EnvelopeViewModel()
+
+  /** Tremolo rate modulation envelope. */
   val tremoloRate = new EnvelopeViewModel()
+
+  /** Tremolo depth modulation envelope. */
   val tremoloDepth = new EnvelopeViewModel()
 
-  val gateRelease = new EnvelopeViewModel()
-  val gateAttack = new EnvelopeViewModel()
+  /** Gate silence duration envelope. */
+  val gateSilence = new EnvelopeViewModel()
 
+  /** Gate audible duration envelope. */
+  val gateDuration = new EnvelopeViewModel()
+
+  /** Filter interpolation envelope. */
   val filterEnvelope = new EnvelopeViewModel()
 
+  /** Filter poles/zeros view model. */
   val filterViewMode = new FilterViewModel()
 
+  /** Tone duration in samples. */
   val duration = new SimpleIntegerProperty(1000)
+
+  /** Start offset in samples. */
   val startOffset = new SimpleIntegerProperty(0)
+
+  /** Echo delay in samples. */
   val echoDelay = new SimpleIntegerProperty(0)
+
+  /** Echo mix level (`0-100`). */
   val echoMix = new SimpleIntegerProperty(0)
 
-  val partials = Array.fill(constants.MaxPartials)(new PartialViewModel())
+  /** Array of partial view models. */
+  val partials: Array[PartialViewModel] =
+    Array.fill(constants.MaxPartials)(new PartialViewModel())
 
   override protected def registerPropertyListeners(cb: () => Unit): Unit =
     Seq(
@@ -38,8 +66,8 @@ class ToneViewModel extends ViewModelLike:
       vibratoDepth,
       tremoloRate,
       tremoloDepth,
-      gateRelease,
-      gateAttack,
+      gateSilence,
+      gateDuration,
       filterEnvelope
     ).foreach(_.addChangeListener(cb))
     filterViewMode.addChangeListener(cb)
@@ -50,6 +78,7 @@ class ToneViewModel extends ViewModelLike:
     echoDelay.addListener((_, _, _) => cb())
     echoMix.addListener((_, _, _) => cb())
 
+  /** Loads tone data from model `Tone`. */
   def load(toneOpt: Option[Tone]): Unit =
     toneOpt match
       case Some(t) =>
@@ -61,16 +90,16 @@ class ToneViewModel extends ViewModelLike:
         vibratoDepth.clear()
         tremoloRate.clear()
         tremoloDepth.clear()
-        gateRelease.clear()
-        gateAttack.clear()
+        gateSilence.clear()
+        gateDuration.clear()
         filterEnvelope.clear()
 
         t.vibratoRate.foreach(vibratoRate.load)
         t.vibratoDepth.foreach(vibratoDepth.load)
         t.tremoloRate.foreach(tremoloRate.load)
         t.tremoloDepth.foreach(tremoloDepth.load)
-        t.gateRelease.foreach(gateRelease.load)
-        t.gateAttack.foreach(gateAttack.load)
+        t.gateSilence.foreach(gateSilence.load)
+        t.gateDuration.foreach(gateDuration.load)
 
         filterViewMode.load(t.filter)
         t.filter.flatMap(_.envelope).foreach(filterEnvelope.load)
@@ -87,6 +116,7 @@ class ToneViewModel extends ViewModelLike:
       case None =>
         clear()
 
+  /** Resets all values to defaults. */
   def clear(): Unit =
     enabled.set(false)
     pitch.clear()
@@ -95,8 +125,8 @@ class ToneViewModel extends ViewModelLike:
     vibratoDepth.clear()
     tremoloRate.clear()
     tremoloDepth.clear()
-    gateRelease.clear()
-    gateAttack.clear()
+    gateSilence.clear()
+    gateDuration.clear()
     filterEnvelope.clear()
     filterViewMode.clear()
 
@@ -106,6 +136,7 @@ class ToneViewModel extends ViewModelLike:
     echoMix.set(0)
     partials.foreach(_.clear())
 
+  /** Converts view model state to model `Tone`. */
   def toModel(): Option[Tone] =
     if !enabled.get then None
     else
@@ -116,12 +147,11 @@ class ToneViewModel extends ViewModelLike:
           .map(_.toModel())
           .toVector
 
-      val emptyIArray3D =
-        IArray.tabulate(2)(_ => IArray.tabulate(2)(_ => IArray.fill(4)(0)))
+      val emptyIArray3D = ArrayUtils.emptyFilterIArray3D
 
       val filterModel = filterViewMode.toModel() match
         case Some(f) =>
-          val env = _optModel(filterEnvelope)
+          val env = optModel(filterEnvelope)
           Some(f.copy(envelope = env))
         case None if !filterEnvelope.isEmpty =>
           val empty = Filter(
@@ -138,12 +168,12 @@ class ToneViewModel extends ViewModelLike:
         Tone(
           pitch.toModel(),
           volume.toModel(),
-          _optModel(vibratoRate),
-          _optModel(vibratoDepth),
-          _optModel(tremoloRate),
-          _optModel(tremoloDepth),
-          _optModel(gateRelease),
-          _optModel(gateAttack),
+          optModel(vibratoRate),
+          optModel(vibratoDepth),
+          optModel(tremoloRate),
+          optModel(tremoloDepth),
+          optModel(gateSilence),
+          optModel(gateDuration),
           activePartials,
           echoDelay.get,
           echoMix.get,
@@ -153,5 +183,5 @@ class ToneViewModel extends ViewModelLike:
         )
       )
 
-  private def _optModel(vm: EnvelopeViewModel): Option[Envelope] =
+  private def optModel(vm: EnvelopeViewModel): Option[Envelope] =
     if vm.isEmpty then None else Some(vm.toModel())

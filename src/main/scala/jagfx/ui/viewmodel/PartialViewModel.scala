@@ -1,23 +1,34 @@
 package jagfx.ui.viewmodel
 
-import javafx.beans.property._
-import jagfx.types._
 import jagfx.model.Partial
+import jagfx.types.*
+import javafx.beans.property.*
 
-/** `ViewModelLike` for `Partial` data. */
+/** View model for `Partial` data. */
 class PartialViewModel extends ViewModelLike:
+  // Fields
+
+  /** Whether this partial is enabled. */
   val active = new SimpleBooleanProperty(false)
+
+  /** Pitch offset in decicents. */
   val pitchOffset = new SimpleIntegerProperty(0)
+
+  /** Volume level (`0-100`). */
   val volume = new SimpleIntegerProperty(0)
+
+  /** Start delay in milliseconds. */
   val startDelay = new SimpleIntegerProperty(0)
 
-  def load(h: Partial): Unit =
+  /** Loads partial data from model. */
+  def load(height: Partial): Unit =
     active.set(true)
-    pitchOffset.set(h.pitchOffset)
-    volume.set(h.volume.value)
-    startDelay.set(h.startDelay.value)
+    pitchOffset.set(height.pitchOffset)
+    volume.set(height.volume.value)
+    startDelay.set(height.startDelay.value)
     notifyListeners()
 
+  /** Resets all values to defaults. */
   def clear(): Unit =
     active.set(false)
     pitchOffset.set(0)
@@ -25,6 +36,7 @@ class PartialViewModel extends ViewModelLike:
     startDelay.set(0)
     notifyListeners()
 
+  /** Converts view model state to model `Partial`. */
   def toModel(): Partial =
     Partial(Percent(volume.get), pitchOffset.get, Millis(startDelay.get))
 

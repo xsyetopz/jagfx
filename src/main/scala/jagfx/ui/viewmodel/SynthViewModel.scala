@@ -1,114 +1,148 @@
 package jagfx.ui.viewmodel
 
-import javafx.beans.property._
-import javafx.collections._
-import jagfx.model._
-import jagfx.constants
-import scala.jdk.CollectionConverters._
-import jagfx.synth.SynthesisExecutor
+import scala.jdk.CollectionConverters.*
 
+import jagfx.constants
+import jagfx.model.*
+import jagfx.synth.SynthesisExecutor
+import javafx.beans.property.*
+import javafx.collections.*
+
+/** Rack display mode for filter/envelope view switching. */
 enum RackMode:
   case Main, Filter, Both
 
-/** Root `ViewModel` encapsulating entire `.synth` file state. */
+/** Root view model encapsulating entire `.synth` file state. */
 class SynthViewModel:
-  private val _activeToneIndex = new SimpleIntegerProperty(0)
-  private val _tones = FXCollections.observableArrayList[ToneViewModel]()
-  private val _loopStart = new SimpleIntegerProperty(0)
-  private val _loopEnd = new SimpleIntegerProperty(0)
-  private val _loopCount = new SimpleIntegerProperty(0)
-  private val _loopEnabled = new SimpleBooleanProperty(false)
-  private val _fileLoaded = new SimpleObjectProperty[java.lang.Long](0L)
+  // Fields
+  private val totalDuration = new SimpleIntegerProperty(0)
+  private var toneClipboard: Option[Option[Tone]] = None
 
-  val rackMode = new SimpleObjectProperty[RackMode](RackMode.Main)
-  val selectedCellIndex = new SimpleIntegerProperty(-1)
+  private val activeToneIndex = new SimpleIntegerProperty(0)
+  private val tones = FXCollections.observableArrayList[ToneViewModel]()
+  private val loopStart = new SimpleIntegerProperty(0)
+  private val loopEnd = new SimpleIntegerProperty(0)
+  private val loopCount = new SimpleIntegerProperty(0)
+  private val loopEnabled = new SimpleBooleanProperty(false)
+  private val fileLoaded = new SimpleObjectProperty[java.lang.Long](0L)
 
   // TGT: false = TONE, true = ALL
-  private val _targetMode = new SimpleBooleanProperty(false)
+  private val targetMode = new SimpleBooleanProperty(false)
 
-  private val _currentFilePath = new SimpleStringProperty("Untitled.synth")
-  def currentFilePathProperty: StringProperty = _currentFilePath
-  def setCurrentFilePath(path: String): Unit = _currentFilePath.set(path)
+  private val currentFilePath = new SimpleStringProperty("Untitled.synth")
 
-  for _ <- 0 until constants.MaxTones do _tones.add(new ToneViewModel())
+  /** Current rack display mode. */
+  val rackMode = new SimpleObjectProperty[RackMode](RackMode.Main)
+
+  /** Currently selected cell index (`-1` if none). */
+  val selectedCellIndex = new SimpleIntegerProperty(-1)
+
+  for _ <- 0 until constants.MaxTones do tones.add(new ToneViewModel())
 
   initDefault()
 
+  /** Current file path property for window title. */
+  def currentFilePathProperty: StringProperty = currentFilePath
+
+  /** Sets current file path. */
+  def setCurrentFilePath(path: String): Unit = currentFilePath.set(path)
+
+  /** Initializes default tone state. */
   def initDefault(): Unit =
-    _tones.asScala.foreach(_.clear())
+    tones.asScala.foreach(_.clear())
 
-    val t1 = _tones.get(0)
-    t1.enabled.set(true)
-    t1.duration.set(1000)
-    t1.volume.waveform.set(Waveform.Square)
-    val h1 = t1.partials(0)
-    h1.active.set(true)
-    h1.volume.set(100)
+    val tone1 = tones.get(0)
+    tone1.enabled.set(true)
+    tone1.duration.set(1000)
+    tone1.volume.waveform.set(Waveform.Square)
 
-    h1.volume.set(100)
+    val partial1 = tone1.partials(0)
+    partial1.active.set(true)
+    partial1.volume.set(100)
 
-    // select OUTPUT cell by default to avoid selectless state
     selectedCellIndex.set(8)
 
-    _currentFilePath.set("Untitled.synth")
+    currentFilePath.set("Untitled.synth")
 
+  /** Resets to default state. */
   def reset(): Unit = initDefault()
 
-  def activeToneIndexProperty: IntegerProperty = _activeToneIndex
-  def getActiveToneIndex: Int = _activeToneIndex.get
-  def setActiveToneIndex(idx: Int): Unit = _activeToneIndex.set(idx)
+  /** Active tone index property. */
+  def activeToneIndexProperty: IntegerProperty = activeToneIndex
 
-  def getTones: ObservableList[ToneViewModel] = _tones
-  def getActiveTone: ToneViewModel = _tones.get(_activeToneIndex.get)
+  /** Returns currently active tone index. */
+  def getActiveToneIndex: Int = activeToneIndex.get
 
-  def loopStartProperty: IntegerProperty = _loopStart
-  def loopEndProperty: IntegerProperty = _loopEnd
-  def loopCountProperty: IntegerProperty = _loopCount
+  /** Sets active tone index. */
+  def setActiveToneIndex(idx: Int): Unit = activeToneIndex.set(idx)
 
-  def loopEnabledProperty: BooleanProperty = _loopEnabled
-  def isLoopEnabled: Boolean = _loopEnabled.get
+  /** Observable list of all tone view models. */
+  def getTones: ObservableList[ToneViewModel] = tones
 
-  def targetModeProperty: BooleanProperty = _targetMode
-  def isTargetAll: Boolean = _targetMode.get
+  /** Returns currently active tone view model. */
+  def getActiveTone: ToneViewModel = tones.get(activeToneIndex.get)
 
-  // max of `tone.duration + tone.start` across all active tones
-  private val _totalDuration = new SimpleIntegerProperty(0)
+  /** Loop start position property. */
+  def loopStartProperty: IntegerProperty = loopStart
 
-  def totalDurationProperty: IntegerProperty = _totalDuration
-  def fileLoadedProperty: ObjectProperty[java.lang.Long] = _fileLoaded
+  /** Loop end position property. */
+  def loopEndProperty: IntegerProperty = loopEnd
 
+  /** Loop repetition count property. */
+  def loopCountProperty: IntegerProperty = loopCount
+
+  /** Loop enabled state property. */
+  def loopEnabledProperty: BooleanProperty = loopEnabled
+
+  /** Returns `true` if loop playback is enabled. */
+  def isLoopEnabled: Boolean = loopEnabled.get
+
+  /** Target mode property (`false` = ONE, `true` = ALL). */
+  def targetModeProperty: BooleanProperty = targetMode
+
+  /** Returns `true` if edits affect all tones. */
+  def isTargetAll: Boolean = targetMode.get
+
+  /** Total duration property (max of all tone durations). */
+  def totalDurationProperty: IntegerProperty = totalDuration
+
+  /** File loaded timestamp property for change detection. */
+  def fileLoadedProperty: ObjectProperty[java.lang.Long] = fileLoaded
+
+  /** Loads `.synth` file data into all tone view models. */
   def load(file: SynthFile): Unit =
     import constants._
     SynthesisExecutor.cancelPending()
 
-    _loopStart.set(file.loop.begin)
-    _loopEnd.set(file.loop.end)
+    loopStart.set(file.loop.begin)
+    loopEnd.set(file.loop.end)
     for i <- 0 until MaxTones do
       val tone = file.tones.lift(i).flatten
-      _tones.get(i).load(tone)
+      tones.get(i).load(tone)
 
     val maxDur = (0 until MaxTones)
       .flatMap(i => file.tones.lift(i).flatten)
       .map(t => t.duration + t.start)
       .maxOption
       .getOrElse(0)
-    _totalDuration.set(maxDur)
-    _activeToneIndex.set(0) // go `Tone 1` whenever file loaded
-    _fileLoaded.set(System.currentTimeMillis())
+    totalDuration.set(maxDur)
+    activeToneIndex.set(0) // go TONE_0 whenever file loaded
+    fileLoaded.set(System.currentTimeMillis())
 
+  /** Converts all tone view models to model `SynthFile`. */
   def toModel(): SynthFile =
-    val toneModels = _tones
+    val toneModels = tones
       .stream()
       .map(_.toModel())
       .toArray(size => new Array[Option[Tone]](size))
       .toVector
-    val loop = LoopParams(_loopStart.get, _loopEnd.get)
+    val loop = LoopParams(loopStart.get, loopEnd.get)
     SynthFile(toneModels, loop)
 
-  private var _toneClipboard: Option[Option[Tone]] = None
-
+  /** Copies active tone to clipboard. */
   def copyActiveTone(): Unit =
-    _toneClipboard = Some(getActiveTone.toModel())
+    toneClipboard = Some(getActiveTone.toModel())
 
+  /** Pastes clipboard to active tone. */
   def pasteToActiveTone(): Unit =
-    _toneClipboard.foreach(getActiveTone.load)
+    toneClipboard.foreach(getActiveTone.load)

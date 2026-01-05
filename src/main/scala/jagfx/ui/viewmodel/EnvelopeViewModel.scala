@@ -1,67 +1,88 @@
 package jagfx.ui.viewmodel
 
-import javafx.beans.property._
-import jagfx.model._
+import jagfx.model.*
+import javafx.beans.property.*
 
-/** `ViewModel` for `Envelope` data. */
+/** `View model for `Envelope` data. */
 class EnvelopeViewModel extends ViewModelLike:
+  // Fields
+
+  /** Oscillator waveform type. */
   val waveform = new SimpleObjectProperty[Waveform](Waveform.Square)
+
+  /** Envelope start value. */
   val start = new SimpleIntegerProperty(0)
+
+  /** Envelope end value. */
   val end = new SimpleIntegerProperty(0)
+
+  /** Number of notes (pitch offset). */
   val notes = new SimpleIntegerProperty(0)
 
-  private var _segments: Vector[EnvelopeSegment] = Vector.empty
+  private var segments: Vector[EnvelopeSegment] = Vector.empty
 
-  def getSegments: Vector[Int] = _segments.map(_.peak)
+  /** Returns segment peak values only. */
+  def getSegments: Vector[Int] = segments.map(_.peak)
 
-  def getFullSegments: Vector[EnvelopeSegment] = _segments
+  /** Returns full segment data including duration and peak. */
+  def getFullSegments: Vector[EnvelopeSegment] = segments
 
+  /** Appends new segment with given duration and peak. */
   def addSegment(duration: Int, peak: Int): Unit =
-    _segments = _segments :+ EnvelopeSegment(duration, peak)
+    segments = segments :+ EnvelopeSegment(duration, peak)
     notifyListeners()
 
+  /** Removes segment at given index. */
   def removeSegment(index: Int): Unit =
-    if index >= 0 && index < _segments.length then
-      _segments = _segments.patch(index, Nil, 1)
+    if index >= 0 && index < segments.length then
+      segments = segments.patch(index, Nil, 1)
       notifyListeners()
 
+  /** Updates segment at given index with new duration and peak. */
   def updateSegment(index: Int, duration: Int, peak: Int): Unit =
-    if index >= 0 && index < _segments.length then
-      _segments = _segments.updated(index, EnvelopeSegment(duration, peak))
+    if index >= 0 && index < segments.length then
+      segments = segments.updated(index, EnvelopeSegment(duration, peak))
       notifyListeners()
 
+  /** Batch updates multiple segments. */
   def updateSegments(updates: Seq[(Int, EnvelopeSegment)]): Unit =
     var changed = false
-    var newSegments = _segments
+    var newSegments = segments
     updates.foreach { case (index, newSeg) =>
       if index >= 0 && index < newSegments.length then
         newSegments = newSegments.updated(index, newSeg)
         changed = true
     }
     if changed then
-      _segments = newSegments
+      segments = newSegments
       notifyListeners()
 
-  def isEmpty: Boolean = _segments.isEmpty && waveform.get == Waveform.Off
-  def isZero: Boolean =
-    start.get == 0 && end.get == 0 && _segments.forall(_.peak == 0)
+  /** Returns `true` if envelope has no segments and waveform is `Off`. */
+  def isEmpty: Boolean = segments.isEmpty && waveform.get == Waveform.Off
 
+  /** Returns `true` if all values are zero (no audible effect). */
+  def isZero: Boolean =
+    start.get == 0 && end.get == 0 && segments.forall(_.peak == 0)
+
+  /** Loads data from model into this view model. */
   def load(env: Envelope): Unit =
     waveform.set(env.waveform)
     start.set(env.start)
     end.set(env.end)
-    _segments = env.segments
+    segments = env.segments
     notifyListeners()
 
+  /** Resets all values to defaults. */
   def clear(): Unit =
     waveform.set(Waveform.Off)
     start.set(0)
     end.set(0)
-    _segments = Vector.empty
+    segments = Vector.empty
     notifyListeners()
 
+  /** Converts view model state to model `Envelope`. */
   def toModel(): Envelope =
-    Envelope(waveform.get, start.get, end.get, _segments)
+    Envelope(waveform.get, start.get, end.get, segments)
 
   override protected def registerPropertyListeners(cb: () => Unit): Unit =
     waveform.addListener((_, _, _) => cb())
