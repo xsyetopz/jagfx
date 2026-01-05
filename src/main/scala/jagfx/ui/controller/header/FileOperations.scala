@@ -7,7 +7,7 @@ import java.nio.file.Files
 import jagfx.ui.viewmodel.SynthViewModel
 import jagfx.io._
 import jagfx.synth.TrackSynthesizer
-import jagfx.utils.UserPreferences
+import jagfx.utils.UserPrefs
 import javafx.scene.control.Alert
 
 /** File I/O operations for `.synth` files and WAV export. */
@@ -15,7 +15,7 @@ class FileOperations(
     viewModel: SynthViewModel,
     getWindow: () => Window
 ):
-  private var currentFile: Option[File] = None
+  private var _currentFile: Option[File] = None
 
   def open(): Unit =
     val chooser = new FileChooser()
@@ -26,34 +26,16 @@ class FileOperations(
     if file != null then
       SynthReader.readFromPath(file.toPath) match
         case Right(synth) =>
-          if synth.warnings.nonEmpty then showWarningDialog(synth.warnings)
+          if synth.warnings.nonEmpty then _showWarningDialog(synth.warnings)
 
           viewModel.load(synth)
           viewModel.setCurrentFilePath(file.getAbsolutePath)
-          currentFile = Some(file)
+          _currentFile = Some(file)
         case Left(err) =>
-          showErrorDialog(s"Failed to load: ${err.message}")
-
-  private def showWarningDialog(warnings: List[String]): Unit =
-    val alert = new Alert(Alert.AlertType.WARNING)
-    alert.setTitle("Corrupt Data Detected")
-    alert.setHeaderText("Loaded file appears to be corrupted or truncated.")
-    alert.setContentText(
-      warnings.mkString(
-        "\n"
-      ) + "\n\nPartial data loaded, but playback may differ from original source."
-    )
-    alert.showAndWait()
-
-  private def showErrorDialog(msg: String): Unit =
-    val alert = new Alert(Alert.AlertType.ERROR)
-    alert.setTitle("Load Error")
-    alert.setHeaderText("Could not load file")
-    alert.setContentText(msg)
-    alert.showAndWait()
+          _showErrorDialog(s"Failed to load: ${err.message}")
 
   def save(): Unit =
-    currentFile match
+    _currentFile match
       case Some(file) =>
         try
           val bytes = SynthWriter.write(viewModel.toModel())
@@ -77,7 +59,7 @@ class FileOperations(
         .ifPresent(chooser.setSelectedExtensionFilter)
     }
 
-    currentFile.foreach { file =>
+    _currentFile.foreach { file =>
       val name = file.getName.replaceFirst("\\.[^.]+$", "")
       chooser.setInitialFileName(name)
       chooser.setInitialDirectory(file.getParentFile)
@@ -89,7 +71,7 @@ class FileOperations(
       try
         if path.toString.endsWith(".wav") then
           val audio = TrackSynthesizer.synthesize(viewModel.toModel(), 1)
-          val is16Bit = UserPreferences.export16Bit.get
+          val is16Bit = UserPrefs.export16Bit.get
           val bytes =
             if is16Bit then audio.toBytes16LE else audio.toBytesUnsigned
           val bits = if is16Bit then 16 else 8
@@ -98,6 +80,24 @@ class FileOperations(
         else
           val bytes = SynthWriter.write(viewModel.toModel())
           Files.write(path, bytes)
-          currentFile = Some(file)
+          _currentFile = Some(file)
           viewModel.setCurrentFilePath(file.getAbsolutePath)
       catch case e: Exception => scribe.error(e)
+
+  private def _showWarningDialog(warnings: List[String]): Unit =
+    val alert = new Alert(Alert.AlertType.WARNING)
+    alert.setTitle("Corrupt Data Detected")
+    alert.setHeaderText("Loaded file appears to be corrupted or truncated.")
+    alert.setContentText(
+      warnings.mkString(
+        "\n"
+      ) + "\n\nPartial data loaded, but playback may differ from original source."
+    )
+    alert.showAndWait()
+
+  private def _showErrorDialog(msg: String): Unit =
+    val alert = new Alert(Alert.AlertType.ERROR)
+    alert.setTitle("Load Error")
+    alert.setHeaderText("Could not load file")
+    alert.setContentText(msg)
+    alert.showAndWait()
