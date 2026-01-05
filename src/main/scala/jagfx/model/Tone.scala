@@ -15,10 +15,10 @@ package jagfx.model
   *   Optional: amplitude modulation rate envelope
   * @param tremoloDepth
   *   Optional: amplitude modulation depth envelope
-  * @param gateRelease
-  *   Optional: gate off (release) envelope
-  * @param gateAttack
-  *   Optional: gate on (attack) envelope
+  * @param gateSilence
+  *   Optional: gate off (silence) envelope
+  * @param gateDuration
+  *   Optional: gate on (duration) envelope
   * @param partials
   *   Additive synthesis partials (overtones)
   * @param echoDelay
@@ -39,8 +39,8 @@ case class Tone(
     vibratoDepth: Option[Envelope],
     tremoloRate: Option[Envelope],
     tremoloDepth: Option[Envelope],
-    gateRelease: Option[Envelope],
-    gateAttack: Option[Envelope],
+    gateSilence: Option[Envelope],
+    gateDuration: Option[Envelope],
     partials: Vector[Partial],
     echoDelay: Int,
     echoMix: Int,
