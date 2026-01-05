@@ -12,6 +12,7 @@ import jagfx.ui.components.group._
 import jagfx.ui.controller.header.HeaderController
 import jagfx.ui.controller.footer.FooterController
 import jagfx.ui.controller.inspector.InspectorController
+import jagfx.ui.controller.rack.RackController
 
 /** Root controller wiring all UI sections. */
 object MainController:
