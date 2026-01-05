@@ -1,6 +1,6 @@
 package jagfx.model
 
-import jagfx.types._
+import jagfx.types.*
 
 /** Additive synthesis partial (partial overtone).
   *
