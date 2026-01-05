@@ -4,7 +4,6 @@ import jagfx.model._
 import jagfx.TestFixtures._
 
 class SynthReaderSuite extends munit.FunSuite:
-
   test("reads cow_death (1 tone) correctly"):
     val result = SynthReader.read(cowDeathHex)
     assert(result.isRight)
@@ -20,11 +19,11 @@ class SynthReaderSuite extends munit.FunSuite:
     val file = result.toOption.get
 
     assertEquals(file.activeTones.size, 2)
-    assertEquals(file.loop.begin, 0)
-    assertEquals(file.loop.end, 0)
-
     val toneIndices = file.activeTones.map(_._1)
     assertEquals(toneIndices, Vector(0, 1))
+
+    assertEquals(file.loop.begin, 0)
+    assertEquals(file.loop.end, 0)
 
   test("reads ice_cast (2 tones) correctly"):
     val result = SynthReader.read(iceCastHex)
