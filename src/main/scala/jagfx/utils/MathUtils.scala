@@ -90,3 +90,20 @@ object MathUtils:
       case UnitType.Percent    => s"${fmt.format(value)}%"
       case UnitType.Normalized => fmt.format(value)
       case UnitType.Decicents  => s"${fmt.format(value / 10.0)} st"
+
+  def distanceToSegment(
+      px: Double,
+      py: Double,
+      x1: Double,
+      y1: Double,
+      x2: Double,
+      y2: Double
+  ): Double =
+    val l2 = (x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1)
+    if l2 == 0 then distance(px, py, x1, y1)
+    else
+      var t = ((px - x1) * (x2 - x1) + (py - y1) * (y2 - y1)) / l2
+      t = math.max(0, math.min(1, t))
+      val projx = x1 + t * (x2 - x1)
+      val projy = y1 + t * (y2 - y1)
+      distance(px, py, projx, projy)
