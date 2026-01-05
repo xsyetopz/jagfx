@@ -14,8 +14,8 @@ object Constants:
   /** Maximum tones per synth file. */
   val MaxTones: Int = 10
 
-  /** Maximum harmonics per tone. */
-  val MaxHarmonics: Int = 10
+  /** Maximum partials per tone. */
+  val MaxPartials: Int = 10
 
   /** Maximum filter pole/zero pairs per direction. */
   val MaxFilterPairs: Int = 4

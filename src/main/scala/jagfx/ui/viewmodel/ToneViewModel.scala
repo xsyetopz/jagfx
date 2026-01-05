@@ -16,8 +16,8 @@ class ToneViewModel extends ViewModelLike:
   val tremoloRate = new EnvelopeViewModel()
   val tremoloDepth = new EnvelopeViewModel()
 
-  val gateSilence = new EnvelopeViewModel()
-  val gateDuration = new EnvelopeViewModel()
+  val gateRelease = new EnvelopeViewModel()
+  val gateAttack = new EnvelopeViewModel()
 
   val filterEnvelope = new EnvelopeViewModel()
 
@@ -25,10 +25,10 @@ class ToneViewModel extends ViewModelLike:
 
   val duration = new SimpleIntegerProperty(1000)
   val startOffset = new SimpleIntegerProperty(0)
-  val reverbDelay = new SimpleIntegerProperty(0)
-  val reverbVolume = new SimpleIntegerProperty(0)
+  val echoDelay = new SimpleIntegerProperty(0)
+  val echoMix = new SimpleIntegerProperty(0)
 
-  val harmonics = Array.fill(Constants.MaxHarmonics)(new HarmonicViewModel())
+  val partials = Array.fill(Constants.MaxPartials)(new PartialViewModel())
 
   override protected def registerPropertyListeners(cb: () => Unit): Unit =
     Seq(
@@ -38,17 +38,17 @@ class ToneViewModel extends ViewModelLike:
       vibratoDepth,
       tremoloRate,
       tremoloDepth,
-      gateSilence,
-      gateDuration,
+      gateRelease,
+      gateAttack,
       filterEnvelope
     ).foreach(_.addChangeListener(cb))
     filterViewMode.addChangeListener(cb)
-    harmonics.foreach(_.addChangeListener(cb))
+    partials.foreach(_.addChangeListener(cb))
     enabled.addListener((_, _, _) => cb())
     duration.addListener((_, _, _) => cb())
     startOffset.addListener((_, _, _) => cb())
-    reverbDelay.addListener((_, _, _) => cb())
-    reverbVolume.addListener((_, _, _) => cb())
+    echoDelay.addListener((_, _, _) => cb())
+    echoMix.addListener((_, _, _) => cb())
 
   def load(toneOpt: Option[Tone]): Unit =
     toneOpt match
@@ -61,28 +61,28 @@ class ToneViewModel extends ViewModelLike:
         vibratoDepth.clear()
         tremoloRate.clear()
         tremoloDepth.clear()
-        gateSilence.clear()
-        gateDuration.clear()
+        gateRelease.clear()
+        gateAttack.clear()
         filterEnvelope.clear()
 
         t.vibratoRate.foreach(vibratoRate.load)
         t.vibratoDepth.foreach(vibratoDepth.load)
         t.tremoloRate.foreach(tremoloRate.load)
         t.tremoloDepth.foreach(tremoloDepth.load)
-        t.gateSilence.foreach(gateSilence.load)
-        t.gateDuration.foreach(gateDuration.load)
+        t.gateRelease.foreach(gateRelease.load)
+        t.gateAttack.foreach(gateAttack.load)
 
         filterViewMode.load(t.filter)
         t.filter.flatMap(_.envelope).foreach(filterEnvelope.load)
 
         duration.set(t.duration)
         startOffset.set(t.start)
-        reverbDelay.set(t.reverbDelay)
-        reverbVolume.set(t.reverbVolume)
+        echoDelay.set(t.echoDelay)
+        echoMix.set(t.echoMix)
 
         for i <- 0 until Constants.MaxTones do
-          if i < t.harmonics.length then harmonics(i).load(t.harmonics(i))
-          else harmonics(i).clear()
+          if i < t.partials.length then partials(i).load(t.partials(i))
+          else partials(i).clear()
 
       case None =>
         clear()
@@ -95,23 +95,23 @@ class ToneViewModel extends ViewModelLike:
     vibratoDepth.clear()
     tremoloRate.clear()
     tremoloDepth.clear()
-    gateSilence.clear()
-    gateDuration.clear()
+    gateRelease.clear()
+    gateAttack.clear()
     filterEnvelope.clear()
     filterViewMode.clear()
 
     duration.set(1000)
     startOffset.set(0)
-    reverbDelay.set(0)
-    reverbVolume.set(0)
-    harmonics.foreach(_.clear())
+    echoDelay.set(0)
+    echoMix.set(0)
+    partials.foreach(_.clear())
 
   def toModel(): Option[Tone] =
     if !enabled.get then None
     else
-      val activeHarmonics =
-        harmonics
-          .take(Constants.MaxHarmonics / 2)
+      val activePartials =
+        partials
+          .take(Constants.MaxPartials / 2)
           .filter(_.active.get)
           .map(_.toModel())
           .toVector
@@ -142,11 +142,11 @@ class ToneViewModel extends ViewModelLike:
           _optModel(vibratoDepth),
           _optModel(tremoloRate),
           _optModel(tremoloDepth),
-          _optModel(gateSilence),
-          _optModel(gateDuration),
-          activeHarmonics,
-          reverbDelay.get,
-          reverbVolume.get,
+          _optModel(gateRelease),
+          _optModel(gateAttack),
+          activePartials,
+          echoDelay.get,
+          echoMix.get,
           duration.get,
           startOffset.get,
           filterModel

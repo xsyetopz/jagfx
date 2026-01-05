@@ -33,16 +33,16 @@ object SynthWriter:
     _writeEnvelope(buf, tone.volumeEnvelope)
     _writeOptionalEnvelopePair(buf, tone.vibratoRate, tone.vibratoDepth)
     _writeOptionalEnvelopePair(buf, tone.tremoloRate, tone.tremoloDepth)
-    _writeOptionalEnvelopePair(buf, tone.gateSilence, tone.gateDuration)
-    _writeHarmonics(buf, tone.harmonics)
-    buf.writeSmartUnsigned(tone.reverbDelay)
-    buf.writeSmartUnsigned(tone.reverbVolume)
+    _writeOptionalEnvelopePair(buf, tone.gateRelease, tone.gateAttack)
+    _writePartials(buf, tone.partials)
+    buf.writeSmartUnsigned(tone.echoDelay)
+    buf.writeSmartUnsigned(tone.echoMix)
     buf.writeU16BE(tone.duration)
     buf.writeU16BE(tone.start)
     _writeFilter(buf, tone.filter)
 
   private def _writeEnvelope(buf: BinaryBuffer, env: Envelope): Unit =
-    buf.writeU8(env.form.id)
+    buf.writeU8(env.waveform.id)
     buf.writeS32BE(env.start)
     buf.writeS32BE(env.end)
     buf.writeU8(env.segments.length)
@@ -128,14 +128,14 @@ object SynthWriter:
       case _ =>
         buf.writeU8(0)
 
-  private def _writeHarmonics(
+  private def _writePartials(
       buf: BinaryBuffer,
-      harmonics: Vector[Harmonic]
+      partials: Vector[Partial]
   ): Unit =
-    val activeHarmonics =
-      harmonics.filter(_.volume > 0).take(Constants.MaxHarmonics)
-    for h <- activeHarmonics do
+    val activePartials =
+      partials.filter(_.volume > 0).take(Constants.MaxPartials)
+    for h <- activePartials do
       buf.writeSmartUnsigned(h.volume)
-      buf.writeSmart(h.semitone)
-      buf.writeSmartUnsigned(h.delay)
+      buf.writeSmart(h.pitchOffset)
+      buf.writeSmartUnsigned(h.startDelay)
     buf.writeSmartUnsigned(0)

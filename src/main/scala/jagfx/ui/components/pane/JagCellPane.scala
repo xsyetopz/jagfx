@@ -7,7 +7,7 @@ import javafx.scene.control._
 import javafx.geometry._
 import jagfx.ui.viewmodel.EnvelopeViewModel
 import jagfx.utils.IconUtils
-import jagfx.model.WaveForm
+import jagfx.model.Waveform
 import javafx.beans.value.ChangeListener
 import jagfx.ui.components.canvas._
 import jagfx.ui.components.button.JagButton

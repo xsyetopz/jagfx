@@ -5,7 +5,7 @@ import jagfx.model._
 
 /** `ViewModel` for `Envelope` data. */
 class EnvelopeViewModel extends ViewModelLike:
-  val form = new SimpleObjectProperty[WaveForm](WaveForm.Square)
+  val waveform = new SimpleObjectProperty[Waveform](Waveform.Square)
   val start = new SimpleIntegerProperty(0)
   val end = new SimpleIntegerProperty(0)
   val notes = new SimpleIntegerProperty(0)
@@ -30,28 +30,28 @@ class EnvelopeViewModel extends ViewModelLike:
       _segments = _segments.updated(index, EnvelopeSegment(duration, peak))
       notifyListeners()
 
-  def isEmpty: Boolean = _segments.isEmpty && form.get == WaveForm.Off
+  def isEmpty: Boolean = _segments.isEmpty && waveform.get == Waveform.Off
   def isZero: Boolean =
     start.get == 0 && end.get == 0 && _segments.forall(_.peak == 0)
 
   def load(env: Envelope): Unit =
-    form.set(env.form)
+    waveform.set(env.waveform)
     start.set(env.start)
     end.set(env.end)
     _segments = env.segments
     notifyListeners()
 
   def clear(): Unit =
-    form.set(WaveForm.Off)
+    waveform.set(Waveform.Off)
     start.set(0)
     end.set(0)
     _segments = Vector.empty
     notifyListeners()
 
   def toModel(): Envelope =
-    Envelope(form.get, start.get, end.get, _segments)
+    Envelope(waveform.get, start.get, end.get, _segments)
 
   override protected def registerPropertyListeners(cb: () => Unit): Unit =
-    form.addListener((_, _, _) => cb())
+    waveform.addListener((_, _, _) => cb())
     start.addListener((_, _, _) => cb())
     end.addListener((_, _, _) => cb())

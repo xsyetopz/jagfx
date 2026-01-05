@@ -31,8 +31,8 @@ class JagBarSlider(min: Int, max: Int, initial: Int, labelText: String = "")
 
   private val _input = JagNumericField(min, max, initial)
   _input.setTooltip(new Tooltip(labelText match
-    case "VOL:" => "Reverb mix level (0-100%)"
-    case "DEL:" => "Reverb delay in samples"
+    case "VOL:" => "Echo mix level (0-100%)"
+    case "DEL:" => "Echo delay in samples"
     case other  => other))
   value.bindBidirectional(_input.valueProperty)
   _inputRow.getChildren.add(_input)

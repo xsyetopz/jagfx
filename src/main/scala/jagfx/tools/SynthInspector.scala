@@ -69,11 +69,11 @@ object SynthInspector:
     println("--- GATE ---")
     inspectOptionalEnvelopePair(buf)
 
-    inspectHarmonics(buf)
+    inspectPartials(buf)
 
     println("--- PARAMETERS ---")
-    buf.readSmartUnsigned("REVERB DELAY")
-    buf.readSmartUnsigned("REVERB VOL")
+    buf.readSmartUnsigned("ECHO DEL")
+    buf.readSmartUnsigned("ECHO MIX")
     buf.readU16BE("DURATION")
     buf.readU16BE("START")
 
@@ -98,22 +98,22 @@ object SynthInspector:
       inspectEnvelope(buf)
     else buf.readU8("EMPTY MARKER")
 
-  def inspectHarmonics(buf: DebugBuffer): Unit =
-    println("--- HARMONICS ---")
+  def inspectPartials(buf: DebugBuffer): Unit =
+    println("--- PARTIALS ---")
     var continue = true
     var count = 0
-    while continue && count < Constants.MaxHarmonics do
+    while continue && count < Constants.MaxPartials do
       val marker = buf.peek()
       if marker != 0 then
         val term = buf.readSmart("H. TERM VOL")
-        buf.readSmart("H. SEMITONE")
-        buf.readSmart("H. DELAY")
-        // println(s"  Harmonic $count read")
+        buf.readSmart("H. PIT")
+        buf.readSmart("H. DEL")
+        // println(s"  Partial $count read")
         count += 1
       else
         buf.readSmart("H. END MARKER")
         continue = false
-        // println("  Harmonics ended")
+        // println("  Partials ended")
 
   def inspectFilter(buf: DebugBuffer): Unit =
     println("--- FILTER ---")

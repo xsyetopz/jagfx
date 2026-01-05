@@ -1,7 +1,7 @@
 package jagfx.model
 
 /** Single instrument voice within `.synth` file. Contains all envelopes,
-  * harmonics, and timing parameters needed to generate audio.
+  * partials, and timing parameters needed to generate audio.
   *
   * @param pitchEnvelope
   *   Fundamental frequency trajectory
@@ -15,16 +15,16 @@ package jagfx.model
   *   Optional: amplitude modulation rate envelope
   * @param tremoloDepth
   *   Optional: amplitude modulation depth envelope
-  * @param gateSilence
+  * @param gateRelease
   *   Optional: gate off (release) envelope
-  * @param gateDuration
+  * @param gateAttack
   *   Optional: gate on (attack) envelope
-  * @param harmonics
+  * @param partials
   *   Additive synthesis partials (overtones)
-  * @param reverbDelay
-  *   Reverb delay in milliseconds
-  * @param reverbVolume
-  *   Reverb mix level `0-100`
+  * @param echoDelay
+  *   Echo delay in milliseconds
+  * @param echoMix
+  *   Echo mix level `0-100`
   * @param duration
   *   Total tone length in milliseconds
   * @param start
@@ -39,11 +39,11 @@ case class Tone(
     vibratoDepth: Option[Envelope],
     tremoloRate: Option[Envelope],
     tremoloDepth: Option[Envelope],
-    gateSilence: Option[Envelope],
-    gateDuration: Option[Envelope],
-    harmonics: Vector[Harmonic],
-    reverbDelay: Int,
-    reverbVolume: Int,
+    gateRelease: Option[Envelope],
+    gateAttack: Option[Envelope],
+    partials: Vector[Partial],
+    echoDelay: Int,
+    echoMix: Int,
     duration: Int,
     start: Int,
     filter: Option[Filter] = None

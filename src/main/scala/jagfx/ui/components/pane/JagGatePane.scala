@@ -31,8 +31,8 @@ class JagGatePane extends JagBasePane("GATE"):
   getChildren.add(_row)
 
   def bind(tone: ToneViewModel): Unit =
-    _silenceCell.setViewModel(tone.gateSilence)
-    _durationCell.setViewModel(tone.gateDuration)
+    _silenceCell.setViewModel(tone.gateRelease)
+    _durationCell.setViewModel(tone.gateAttack)
 
   def getCells: Seq[JagCellPane] =
     Seq(_silenceCell, _durationCell)

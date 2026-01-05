@@ -1,7 +1,7 @@
 package jagfx.io
 
 import jagfx.model._
-import jagfx.Constants.{MaxTones, MaxHarmonics}
+import jagfx.Constants.{MaxTones, MaxPartials}
 import java.nio.file._
 import scala.collection.mutable.ListBuffer
 
@@ -76,11 +76,11 @@ object SynthReader:
 
       val (vibratoRate, vibratoDepth) = _readOptionalEnvelopePair()
       val (tremoloRate, tremoloDepth) = _readOptionalEnvelopePair()
-      val (gateSilence, gateDuration) = _readOptionalEnvelopePair()
+      val (gateRelease, gateAttack) = _readOptionalEnvelopePair()
 
-      val harmonics = _readHarmonics()
-      val reverbDelay = buf.readSmartUnsigned()
-      val reverbVolume = buf.readSmartUnsigned()
+      val partials = _readPartials()
+      val echoDelay = buf.readSmartUnsigned()
+      val echoMix = buf.readSmartUnsigned()
       val duration = buf.readU16BE()
       val start = buf.readU16BE()
       val filter = _readFilter()
@@ -97,11 +97,11 @@ object SynthReader:
         vibratoDepth = vibratoDepth,
         tremoloRate = tremoloRate,
         tremoloDepth = tremoloDepth,
-        gateSilence = gateSilence,
-        gateDuration = gateDuration,
-        harmonics = harmonics,
-        reverbDelay = reverbDelay,
-        reverbVolume = reverbVolume,
+        gateRelease = gateRelease,
+        gateAttack = gateAttack,
+        partials = partials,
+        echoDelay = echoDelay,
+        echoMix = echoMix,
         duration = duration,
         start = start,
         filter = filter
@@ -177,14 +177,14 @@ object SynthReader:
       val formId = buf.readU8()
       val start = buf.readS32BE()
       val end = buf.readS32BE()
-      val form = WaveForm.fromId(formId)
+      val waveform = Waveform.fromId(formId)
 
       val segmentLength = buf.readU8()
       val segments = (0 until segmentLength).map { _ =>
         EnvelopeSegment(buf.readU16BE(), buf.readU16BE())
       }.toVector
 
-      Envelope(form, start, end, segments)
+      Envelope(waveform, start, end, segments)
 
     private def _readEnvelopeSegments(): Envelope =
       val length = buf.readU8()
@@ -194,7 +194,7 @@ object SynthReader:
         EnvelopeSegment(dur, peak)
       }.toVector
 
-      Envelope(WaveForm.Off, 0, 0, segments)
+      Envelope(Waveform.Off, 0, 0, segments)
 
     private def _readOptionalEnvelopePair()
         : (Option[Envelope], Option[Envelope]) =
@@ -207,17 +207,17 @@ object SynthReader:
         buf.skip(1) // eat '0' flag
         (None, None)
 
-    private def _readHarmonics(): Vector[Harmonic] =
-      val builder = Vector.newBuilder[Harmonic]
-      builder.sizeHint(MaxHarmonics)
+    private def _readPartials(): Vector[Partial] =
+      val builder = Vector.newBuilder[Partial]
+      builder.sizeHint(MaxPartials)
       var continue = true
       var count = 0
-      while continue && count < MaxHarmonics do
+      while continue && count < MaxPartials do
         val volume = buf.readSmartUnsigned()
         if volume == 0 then continue = false
         else
-          val semitone = buf.readSmart()
-          val delay = buf.readSmartUnsigned()
-          builder += Harmonic(volume, semitone, delay)
+          val pitchOffset = buf.readSmart()
+          val startDelay = buf.readSmartUnsigned()
+          builder += Partial(volume, pitchOffset, startDelay)
           count += 1
       builder.result()

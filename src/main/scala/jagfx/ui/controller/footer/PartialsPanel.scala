@@ -12,31 +12,31 @@ import jagfx.ui.components.field._
 import jagfx.ui.components.button._
 import jagfx.Constants
 
-/** Harmonics panel with H1-5/H6-10 bank switcher. */
-object HarmonicsPanel:
+/** Partials panel with P1-5/P6-10 bank switcher. */
+object PartialsPanel:
   // store strip components for rebinding
   private case class HStrip(
       strip: VBox,
       label: Label,
-      sRow: HarmonicsRow,
-      vRow: HarmonicsRow,
-      dRow: HarmonicsRow
+      sRow: PartialsRow,
+      vRow: PartialsRow,
+      dRow: PartialsRow
   )
 
-  private val _HalfMaxHarmonics = Constants.MaxHarmonics - 5
+  private val _HalfMaxPartials = Constants.MaxPartials - 5
 
   def create(viewModel: SynthViewModel): VBox =
     val panel = VBox()
     panel.getStyleClass.add("panel")
     HBox.setHgrow(panel, Priority.ALWAYS)
 
-    // 0 = H1-5, 5 = H6-10
+    // 0 = P1-5, 5 = P6-10
     var bankOffset = 0
 
     val headRow = StackPane()
     headRow.setAlignment(Pos.CENTER)
 
-    val head = Label("HARMONICS")
+    val head = Label("PARTIALS")
     head.getStyleClass.add("panel-head")
     head.setMaxWidth(Double.MaxValue)
     head.setAlignment(Pos.CENTER)
@@ -49,25 +49,24 @@ object HarmonicsPanel:
     headRow.getChildren.addAll(head, bankBtn)
 
     val grid = HBox(2)
-    grid.setId("harmonics")
+    grid.setId("partials")
     VBox.setVgrow(grid, Priority.ALWAYS)
 
-    val strips = new Array[HStrip](_HalfMaxHarmonics)
-
-    for i <- 0 until _HalfMaxHarmonics do
+    val strips = new Array[HStrip](_HalfMaxPartials)
+    for i <- 0 until _HalfMaxPartials do
       val hs = _createStrip(i)
       strips(i) = hs
       grid.getChildren.add(hs.strip)
 
     var volListeners =
       Array.fill[Option[(IntegerProperty, ChangeListener[Number])]](
-        _HalfMaxHarmonics
+        _HalfMaxPartials
       )(None)
 
-    def bindHarmonics(): Unit =
-      for i <- 0 until _HalfMaxHarmonics do
+    def bindPartials(): Unit =
+      for i <- 0 until _HalfMaxPartials do
         val hIdx = bankOffset + i
-        val h = viewModel.getActiveTone.harmonics(hIdx)
+        val h = viewModel.getActiveTone.partials(hIdx)
 
         // remove old listener
         volListeners(i).foreach { case (prop, listener) =>
@@ -75,10 +74,10 @@ object HarmonicsPanel:
         }
 
         val hs = strips(i)
-        hs.label.setText(s"HARMONIC ${hIdx + 1}")
-        hs.sRow.bind(h.semitone)
+        hs.label.setText(s"PARTIAL ${hIdx + 1}")
+        hs.sRow.bind(h.pitchOffset)
         hs.vRow.bind(h.volume)
-        hs.dRow.bind(h.delay)
+        hs.dRow.bind(h.startDelay)
 
         val volListener = _createVolListener(hs)
         h.volume.addListener(volListener)
@@ -87,13 +86,13 @@ object HarmonicsPanel:
         volListener.changed(null, null, h.volume.get)
 
     bankBtn.setOnAction(_ =>
-      bankOffset = if bankOffset == 0 then _HalfMaxHarmonics else 0
+      bankOffset = if bankOffset == 0 then _HalfMaxPartials else 0
       bankBtn.setText(if bankOffset == 0 then "1-5" else "6-10")
-      bindHarmonics()
+      bindPartials()
     )
 
-    viewModel.activeToneIndexProperty.addListener((_, _, _) => bindHarmonics())
-    bindHarmonics()
+    viewModel.activeToneIndexProperty.addListener((_, _, _) => bindPartials())
+    bindPartials()
 
     panel.getChildren.addAll(headRow, grid)
     panel
@@ -103,12 +102,12 @@ object HarmonicsPanel:
     strip.getStyleClass.add("h-strip")
     HBox.setHgrow(strip, Priority.ALWAYS)
 
-    val label = Label(s"HARMONIC ${index + 1}")
+    val label = Label(s"PARTIAL ${index + 1}")
     label.getStyleClass.add("h-head")
 
-    val sRow = HarmonicsRow("SEMI:", -480, 480, 10.0, "%.1f")
-    val vRow = HarmonicsRow("VOL:", 0, 100)
-    val dRow = HarmonicsRow("DEL:", 0, 1000)
+    val sRow = PartialsRow("SEMI:", -480, 480, 10.0, "%.1f")
+    val vRow = PartialsRow("VOL:", 0, 100)
+    val dRow = PartialsRow("DEL:", 0, 1000)
 
     strip.getChildren.addAll(label, sRow.view, vRow.view, dRow.view)
     HStrip(strip, label, sRow, vRow, dRow)
@@ -122,8 +121,8 @@ object HarmonicsPanel:
 
 import javafx.scene.control._
 
-/** Single row in harmonics strip (`SEMI`/`VOL`/`DEL`). */
-class HarmonicsRow(
+/** Single row in partials strip. */
+class PartialsRow(
     labelTxt: String,
     min: Int,
     max: Int,
@@ -143,10 +142,10 @@ class HarmonicsRow(
   input.setPrefWidth(32)
   val scrollHelp = "\nScroll: ±1\nShift: ±10\nCmd: ±0.01"
   val tipText = labelTxt match
-    case "SEMI:" => "Semitone offset (decicents, 10 = 1 semitone)"
-    case "VOL:"  => "Harmonic volume (0-100%)"
-    case "DEL:"  => "Phase delay (ms)"
-    case _       => labelTxt
+    case "PIT:" => "Pitch offset (decicents, 10 = 1 semitone)"
+    case "VOL:" => "Partial volume (0-100%)"
+    case "DEL:" => "Time delay (ms)"
+    case _      => labelTxt
 
   input.setTooltip(new Tooltip(tipText + scrollHelp))
 

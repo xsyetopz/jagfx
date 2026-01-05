@@ -8,7 +8,7 @@ import jagfx.ui.components.field._
 import jagfx.ui.components.group._
 import jagfx.ui.components.slider._
 import jagfx.ui.components.pane._
-import jagfx.model.WaveForm
+import jagfx.model.Waveform
 
 private val _RangeFieldSize = 48
 
@@ -33,14 +33,14 @@ class EnvelopeInspector extends VBox:
 
   _waveGrid.selectedProperty.addListener((_, _, newVal) =>
     _currentEnvelope.foreach { env =>
-      val form = newVal match
-        case "Off" => WaveForm.Off
-        case "Sqr" => WaveForm.Square
-        case "Sin" => WaveForm.Sine
-        case "Saw" => WaveForm.Saw
-        case "Nse" => WaveForm.Noise
-        case _     => WaveForm.Off
-      env.form.set(form)
+      val waveform = newVal match
+        case "Off" => Waveform.Off
+        case "Sqr" => Waveform.Square
+        case "Sin" => Waveform.Sine
+        case "Saw" => Waveform.Saw
+        case "Nse" => Waveform.Noise
+        case _     => Waveform.Off
+      env.waveform.set(waveform)
     }
   )
 
@@ -93,11 +93,11 @@ class EnvelopeInspector extends VBox:
   def bind(envelope: EnvelopeViewModel): Unit =
     _currentEnvelope = Some(envelope)
 
-    val formStr = envelope.form.get match
-      case WaveForm.Square => "Sqr"
-      case WaveForm.Sine   => "Sin"
-      case WaveForm.Saw    => "Saw"
-      case WaveForm.Noise  => "Nse"
+    val formStr = envelope.waveform.get match
+      case Waveform.Square => "Sqr"
+      case Waveform.Sine   => "Sin"
+      case Waveform.Saw    => "Saw"
+      case Waveform.Noise  => "Nse"
       case _               => "Off"
 
     _waveGrid.setSelected(formStr)

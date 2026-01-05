@@ -40,8 +40,8 @@ class SynthViewModel:
     val t1 = _tones.get(0)
     t1.enabled.set(true)
     t1.duration.set(1000)
-    t1.volume.form.set(WaveForm.Square)
-    val h1 = t1.harmonics(0)
+    t1.volume.waveform.set(Waveform.Square)
+    val h1 = t1.partials(0)
     h1.active.set(true)
     h1.volume.set(100)
 

@@ -66,14 +66,14 @@ object RackDefs:
       CellType.Output
     ),
     RackCellDef(
-      "G.SIL",
-      "Sets initial delay (silence) before note begins playing.",
-      CellType.Envelope(_.gateSilence)
+      "G.REL",
+      "ontrols duration of silence (gate closed) phase.",
+      CellType.Envelope(_.gateRelease)
     ),
     RackCellDef(
-      "G.DUR",
-      "Determines total length of active note segment in samples.",
-      CellType.Envelope(_.gateDuration)
+      "G.ATT",
+      "Controls duration of audible (gate open) phase.",
+      CellType.Envelope(_.gateAttack)
     ),
     RackCellDef(
       "BODE",

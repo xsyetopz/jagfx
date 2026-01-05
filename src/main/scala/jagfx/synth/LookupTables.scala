@@ -6,7 +6,8 @@ import jagfx.Constants.{Int16, SemitoneRange, SinTableDivisor, CircleSegments}
 
 /** Precomputed lookup tables for DSP and rendering operations. */
 object LookupTables:
-  val SemitoneBase = 1.0057929410678534
+  /** `math.pow(2 * (1 / 120))` */
+  val DecicentRatio = 1.0057929410678534
 
   /** Noise table with deterministic random `-1`/`+1` values. */
   lazy val noise: Array[Int] =
@@ -24,15 +25,15 @@ object LookupTables:
   /** Semitone multipliers mapping index `0-240` to semitones `-120` to `+120`.
     */
   private lazy val _semitoneCache: Array[Double] =
-    Array.tabulate(241)(i => math.pow(SemitoneBase, i - SemitoneRange))
+    Array.tabulate(241)(i => math.pow(DecicentRatio, i - SemitoneRange))
 
-  /** Returns multiplier for given semitone offset. Uses cache for
+  /** Returns multiplier for given decicent offset. Uses cache for
     * `[-120, 120]`, `math.pow` otherwise.
     */
-  def getSemitoneMultiplier(semitone: Int): Double =
-    if semitone >= -SemitoneRange && semitone <= SemitoneRange then
-      _semitoneCache(semitone + SemitoneRange)
-    else math.pow(SemitoneBase, semitone.toDouble)
+  def getPitchMultiplier(decicents: Int): Double =
+    if decicents >= -SemitoneRange && decicents <= SemitoneRange then
+      _semitoneCache(decicents + SemitoneRange)
+    else math.pow(DecicentRatio, decicents.toDouble)
 
   /** Unit circle X coordinates for `64`-segment rendering. */
   lazy val unitCircleX: Array[Double] =

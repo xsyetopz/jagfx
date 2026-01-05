@@ -37,14 +37,14 @@ class SynthReaderSuite extends munit.FunSuite:
   test("parses envelope forms correctly"):
     val cow = SynthReader.read(cowDeathHex).toOption.get
     val (_, cowTone) = cow.activeTones.head
-    assertEquals(cowTone.pitchEnvelope.form, WaveForm.Sine)
+    assertEquals(cowTone.pitchEnvelope.waveform, Waveform.Sine)
 
     val protect = SynthReader.read(protectFromMagicHex).toOption.get
     val (_, protectTone1) = protect.activeTones.head
-    assertEquals(protectTone1.pitchEnvelope.form, WaveForm.Square)
+    assertEquals(protectTone1.pitchEnvelope.waveform, Waveform.Square)
 
-  test("parses harmonics correctly"):
+  test("parses partials correctly"):
     val result = SynthReader.read(cowDeathHex).toOption.get
     val (_, tone) = result.activeTones.head
-    assertEquals(tone.harmonics.length, 2)
-    assertEquals(tone.harmonics(0).volume, 100)
+    assertEquals(tone.partials.length, 2)
+    assertEquals(tone.partials(0).volume, 100)
