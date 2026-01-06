@@ -123,8 +123,8 @@ Read until `Volume (usmart) == 0` or Max `10` reached.
 | Field | Type | Notes |
 |-------|------|-------|
 | Volume | `usmart` | If `0`, stop reading. |
-| Semitone | `smart` | Signed relative pitch |
-| Delay | `usmart` | Phase offset |
+| Decicents | `smart` | Signed relative pitch |
+| Start Delay | `usmart` | Time offset |
 
 ---
 
