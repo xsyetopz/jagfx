@@ -3,6 +3,7 @@ package jagfx.ui.controller.rack
 import jagfx.ui.components.button.JagButton
 import jagfx.ui.components.canvas.JagEnvelopeEditorCanvas
 import jagfx.ui.viewmodel.SynthViewModel
+import jagfx.utils.ColorUtils
 import jagfx.utils.IconUtils
 import javafx.geometry.Pos
 import javafx.scene.control.Label
@@ -71,6 +72,10 @@ class RackEditor(viewModel: SynthViewModel):
             val voice = viewModel.getActiveVoice
             val env = getter(voice)
             canvas.setViewModel(env)
+            if cellIdx == 9 || cellIdx == 10 then
+              canvas.setGraphColor(ColorUtils.Gating)
+            else canvas.setGraphColor(ColorUtils.Graph)
+
             title.setText(s"${cellDef.title} EDITOR")
             editorModeCell = Some(cellIdx)
             overlay.setVisible(true)
