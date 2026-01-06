@@ -7,8 +7,9 @@ import jagfx.io.*
 import jagfx.synth.TrackSynthesizer
 import jagfx.ui.viewmodel.SynthViewModel
 import jagfx.utils.UserPrefs
-import javafx.scene.control.Alert
+import javafx.scene.control.*
 import javafx.stage.*
+import javafx.scene.layout.*
 
 /** File I/O operations for `.synth` files and WAV export. */
 class FileOperations(viewModel: SynthViewModel, getWindow: () => Window):
@@ -25,7 +26,8 @@ class FileOperations(viewModel: SynthViewModel, getWindow: () => Window):
     if file != null then
       SynthReader.readFromPath(file.toPath) match
         case Right(synth) =>
-          if synth.warnings.nonEmpty then showWarningDialog(synth.warnings)
+          if synth.warnings.nonEmpty then
+            showWarningDialog(file, synth.warnings)
           viewModel.load(synth)
           viewModel.setCurrentFilePath(file.getAbsolutePath)
           currentFile = Some(file)
@@ -83,19 +85,97 @@ class FileOperations(viewModel: SynthViewModel, getWindow: () => Window):
           viewModel.setCurrentFilePath(file.getAbsolutePath)
       catch case e: Exception => scribe.error(e)
 
-  private def showWarningDialog(warnings: List[String]): Unit =
-    val alert = new Alert(Alert.AlertType.WARNING)
-    alert.setTitle("Corrupt Data Detected")
-    alert.setHeaderText("Loaded file appears to be corrupted or truncated.")
-    alert.setContentText(
-      warnings.mkString("\n") +
-        "\n\nPartial data loaded; playback may differ from original source."
+  private def showWarningDialog(file: File, warnings: List[String]): Unit =
+    showTechDialog(
+      alertType = Alert.AlertType.WARNING,
+      title = "Parse Warning",
+      header = s"Issues parsing: ${file.getName}",
+      content = warnings.mkString("\n") +
+        "\n\nPartial data loaded; playback may differ from original.",
+      file = Some(file),
+      details = warnings
     )
-    alert.showAndWait()
 
   private def showErrorDialog(msg: String): Unit =
-    val alert = new Alert(Alert.AlertType.ERROR)
-    alert.setTitle("Load Error")
-    alert.setHeaderText("Could not load file")
-    alert.setContentText(msg)
+    showTechDialog(
+      alertType = Alert.AlertType.ERROR,
+      title = "Open Error",
+      header = "Could not open file",
+      content = msg,
+      file = currentFile,
+      details = List(msg)
+    )
+
+  private def showTechDialog(
+      alertType: Alert.AlertType,
+      title: String,
+      header: String,
+      content: String,
+      file: Option[File],
+      details: List[String]
+  ): Unit =
+    val alert = new Alert(alertType)
+    alert.setTitle(title)
+    alert.setHeaderText(header)
+    alert.setContentText(content)
+
+    val techReport = buildTechReport(alertType, file, details)
+
+    val textArea = new TextArea(techReport)
+    textArea.setEditable(false)
+    textArea.setWrapText(false)
+    textArea.setMaxWidth(Double.MaxValue)
+    textArea.setMaxHeight(Double.MaxValue)
+    textArea.setStyle("-fx-font-family: monospace; -fx-font-size: 11px;")
+    GridPane.setVgrow(textArea, Priority.ALWAYS)
+    GridPane.setHgrow(textArea, Priority.ALWAYS)
+
+    val expContent = new GridPane()
+    expContent.setMaxWidth(Double.MaxValue)
+    expContent.add(textArea, 0, 0)
+
+    alert.getDialogPane.setExpandableContent(expContent)
+    alert.getDialogPane.setPrefWidth(600)
     alert.showAndWait()
+
+  private def buildTechReport(
+      alertType: Alert.AlertType,
+      file: Option[File],
+      details: List[String]
+  ): String =
+    val typeLabel =
+      if alertType == Alert.AlertType.ERROR then "ERROR" else "WARNING"
+    val fileInfo = file match
+      case Some(f) =>
+        val sizeBytes = f.length()
+        val hexDump =
+          try
+            val bytes = Files.readAllBytes(f.toPath)
+            bytes
+              .take(64)
+              .grouped(16)
+              .zipWithIndex
+              .map { case (chunk, i) =>
+                f"${i * 16}%04X: ${chunk.map(b => f"${b & 0xff}%02X").mkString(" ")}"
+              }
+              .mkString("\n")
+          catch case _: Exception => "(unable to read)"
+
+        Seq(
+          s"File: ${f.getAbsolutePath}",
+          s"Name: ${f.getName}",
+          s"Size: $sizeBytes bytes (0x${sizeBytes.toHexString.toUpperCase})",
+          "",
+          "Hex (first 64 bytes):",
+          hexDump
+        ).mkString("\n")
+      case None => "File: (none)"
+
+    Seq(
+      s"=== JAGFX $typeLabel ===",
+      fileInfo,
+      "",
+      "Details:",
+      details.map("  - " + _).mkString("\n"),
+      "=".repeat(24)
+    ).mkString("\n")
