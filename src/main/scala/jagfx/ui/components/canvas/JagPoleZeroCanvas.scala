@@ -40,8 +40,15 @@ class JagPoleZeroCanvas extends JagBaseCanvas:
     drawGrid(buffer, width, height, geom)
     drawUnitCircle(buffer, width, height, geom)
     viewModel.foreach { vm =>
-      drawFeedforwardPoles(buffer, width, height, vm, geom)
-      drawFeedbackPoles(buffer, width, height, vm, geom)
+      // end state (dimmed)
+      val dimZero = dimColor(FilterZero)
+      val dimPole = dimColor(FilterPole)
+      drawFeedforwardPoles(buffer, width, height, vm, geom, 1, dimZero)
+      drawFeedbackPoles(buffer, width, height, vm, geom, 1, dimPole)
+
+      // start state (normal)
+      drawFeedforwardPoles(buffer, width, height, vm, geom, 0, FilterZero)
+      drawFeedbackPoles(buffer, width, height, vm, geom, 0, FilterPole)
     }
 
   private def drawGrid(
@@ -71,31 +78,37 @@ class JagPoleZeroCanvas extends JagBaseCanvas:
       width: Int,
       height: Int,
       vm: FilterViewModel,
-      g: Geometry
+      g: Geometry,
+      point: Int,
+      color: Int
   ): Unit =
     for i <- 0 until vm.pairCount0.get do
-      val (x, y) = polePosition(vm, 0, i, g)
-      drawCircleMarker(buffer, width, height, x, y, FilterZero)
+      val (x, y) = polePosition(vm, 0, i, g, point)
+      drawCircleMarker(buffer, width, height, x, y, color)
 
   private def drawFeedbackPoles(
       buffer: Array[Int],
       width: Int,
       height: Int,
       vm: FilterViewModel,
-      g: Geometry
+      g: Geometry,
+      point: Int,
+      color: Int
   ): Unit =
     for i <- 0 until vm.pairCount1.get do
-      val (x, y) = polePosition(vm, 1, i, g)
-      drawCrossMarker(buffer, width, height, x, y, FilterPole)
+      val (x, y) = polePosition(vm, 1, i, g, point)
+      drawCrossMarker(buffer, width, height, x, y, color)
 
   private def polePosition(
       vm: FilterViewModel,
       dir: Int,
       idx: Int,
-      g: Geometry
+      g: Geometry,
+      point: Int
   ): (Int, Int) =
-    val phase = vm.pairPhase(dir)(idx)(0).get / Int16.Range * MathUtils.TwoPi
-    val mag = vm.pairMagnitude(dir)(idx)(0).get / Int16.Range
+    val phase =
+      vm.pairPhase(dir)(idx)(point).get / Int16.Range.toDouble * MathUtils.TwoPi
+    val mag = vm.pairMagnitude(dir)(idx)(point).get / Int16.Range.toDouble
     val x = g.cx + (g.radius * mag * math.cos(phase)).toInt
     val y = g.cy - (g.radius * mag * math.sin(phase)).toInt
     (x, y)
